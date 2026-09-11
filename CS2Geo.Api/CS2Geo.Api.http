@@ -1,0 +1,19 @@
+@CS2Geo.Api_HostAddress = http://localhost:5148
+
+# Grab a random round to guess
+GET {{CS2Geo.Api_HostAddress}}/rounds/random
+Accept: application/json
+
+###
+
+# Submit a guess for a round and get scored
+POST {{CS2Geo.Api_HostAddress}}/rounds/guess
+Content-Type: application/json
+
+{
+  "locationId": 3,
+  "guessX": 160,
+  "guessY": 460
+}
+
+###
