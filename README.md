@@ -11,7 +11,7 @@ Team leader: Miron Beliajev
 ### Team Members
 
 - Miron Beliajev (Team Leader, Full-stack) - [@meakomeow](https://github.com/meakomeow)
-- Leon Sidun (Full-stack) - [@ ]
+- Leon Sidun (Full-stack) - [@ilovekomaru](https://github.com/ilovekomaru)
 - Erikas Atkociunas (Full-stack) - [@ErikasAtko](https://github.com/ErikasAtko)
 - Lukas Stasytis (Full-stack) - [@ ]
 
@@ -19,7 +19,7 @@ Everyone on the team works across both backend and frontend to learn as much as 
 
 ## End-to-End Scenario
 
-Your NOOB friend just carried you and you've got no comeback because your hands were cold. Fire up CS2-GeoGuessr and flex your map knowledge instead: a screenshot from somewhere on Dust II pops up next to the full map. You study the lighting and geometry, then click the spot where you think it was taken. The game reveals the real location and scores you on how close you got. Beat your friend to prove you're not completely cooked.
+Your NOOB friend just carried you, and you've got no comeback because your hands were cold. Fire up CS2-GeoGuessr and flex your map knowledge instead: a screenshot from somewhere on Dust II pops up next to the full map. You study the lighting and geometry, then click the spot where you think it was taken. The game reveals the real location and scores you on how close you got. Beat your friend to prove you're not completely cooked.
 
 ## Roadmap
 
