@@ -1,0 +1,8 @@
+﻿@host = http://localhost:5080
+
+GET {{host}}/api/maps
+###
+GET {{host}}/api/maps/de_mirage
+###
+GET {{host}}/api/rounds/random?map=de_mirage
+###
