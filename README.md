@@ -11,9 +11,9 @@ Team leader: Miron Beliajev
 ### Team Members
 
 - Miron Beliajev (Team Leader, Full-stack) - [@meakomeow](https://github.com/meakomeow)
-- Leon Sidun (Full-stack) - [@ilovekomaru](https://github.com/ilovekomaru)
+- Leon Sidun (Back-End, System Admin) - [@ilovekomaru](https://github.com/ilovekomaru)
 - Erikas Atkociunas (Full-stack) - [@ErikasAtko](https://github.com/ErikasAtko)
-- Lukas Stasytis (Full-stack) - [@ ]
+- Lukas Stasytis (Full-stack) - [@lukasstasytis19-collab](https://github.com/lukasstasytis19-collab)
 
 Everyone on the team works across both backend and frontend to learn as much as possible, rather than sticking to fixed lanes.
 
