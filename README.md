@@ -51,12 +51,12 @@ Example - Miron picks up issue #3, "Add scoring logic":
 
 ## Prerequisites
 
-.NET SDK 10, JetBrains Rider (or IDE of choice), Tailscale
-TypeScript 6, React 19
+.NET SDK 10, JetBrains Rider (or IDE of choice), Tailscale, TypeScript 6, React 19
 
 
 ## Structure
 
+```
 CS2-GEO/
 ├── Data/Entities/       C# classes that EF maps to database tables (Map, Location)
 ├── Data/GameDbContext   the entry point for every database query
@@ -67,13 +67,13 @@ CS2-GEO/
 └── api.http             ready-made requests to exercise the API without running the frontend
 
 database/seed.sql        seed data: the maps and locations the game starts with
-
+```
 
 ## Databases
 
 Each member has his own database on the server, which he can access through tailscale connection (ask ilovekomaru).
 
-### Useful commands:
+### Useful guides:
 
 #### Initializing DB after cloning git
 
@@ -85,17 +85,14 @@ dotnet ef database update
 
 #### Remaking DB
 
-In Query Console:
-```
-DROP TABLE IF EXISTS locations CASCADE;
-DROP TABLE IF EXISTS maps CASCADE;
-DROP TABLE IF EXISTS "__EFMigrationsHistory" CASCADE;`
-```
+Launch ./database/drop-tables.sql
 
 In Project Console:
 ```
 dotnet ef database update
 ```
+
+Launch ./database/seed1.sql to fill the database with initial data
 
 
 ## Build and Run
