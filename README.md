@@ -73,7 +73,7 @@ database/seed.sql        seed data: the maps and locations the game starts with
 
 Each member has his own database on the server, which he can access through tailscale connection (ask ilovekomaru).
 
-### Useful commands:
+### Useful guides:
 
 #### Initializing DB after cloning git
 
@@ -85,17 +85,14 @@ dotnet ef database update
 
 #### Remaking DB
 
-In Query Console:
-```
-DROP TABLE IF EXISTS locations CASCADE;
-DROP TABLE IF EXISTS maps CASCADE;
-DROP TABLE IF EXISTS "__EFMigrationsHistory" CASCADE;`
-```
+Launch ./database/drop-tables.sql
 
 In Project Console:
 ```
 dotnet ef database update
 ```
+
+Launch ./database/seed1.sql to fill the database with initial data
 
 
 ## Build and Run
