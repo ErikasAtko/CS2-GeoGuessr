@@ -51,12 +51,12 @@ Example - Miron picks up issue #3, "Add scoring logic":
 
 ## Prerequisites
 
-.NET SDK 10, JetBrains Rider (or IDE of choice), Tailscale
-TypeScript 6, React 19
+.NET SDK 10, JetBrains Rider (or IDE of choice), Tailscale, TypeScript 6, React 19
 
 
 ## Structure
 
+```
 CS2-GEO/
 ├── Data/Entities/       C# classes that EF maps to database tables (Map, Location)
 ├── Data/GameDbContext   the entry point for every database query
@@ -67,7 +67,7 @@ CS2-GEO/
 └── api.http             ready-made requests to exercise the API without running the frontend
 
 database/seed.sql        seed data: the maps and locations the game starts with
-
+```
 
 ## Databases
 
