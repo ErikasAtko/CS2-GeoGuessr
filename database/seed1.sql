@@ -1,6 +1,6 @@
 ﻿INSERT INTO maps (code, display_name, minimap_url) VALUES
-('de_mirage', 'Mirage',  '/images/minimaps/de_mirage.png'),
-('de_dust2',  'Dust II', '/images/minimaps/de_dust2.png')
+('de_mirage', 'Mirage',  '/images/maps/de_mirage.png'),
+('de_dust2',  'Dust II', '/images/maps/de_dust2.png')
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO locations (map_id, image_url, x, y) VALUES

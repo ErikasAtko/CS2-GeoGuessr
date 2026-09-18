@@ -7,7 +7,7 @@
 --      main, and running this against it wipes the whole team's data.
 --   3. Execute the whole file (Ctrl+Enter, then "Execute script" if asked).
 --
--- AFTERWARDS, from the CS2-GEO folder in a terminal:
+-- AFTERWARD, from the CS2-GEO folder in a terminal:
 --   dotnet ef database update    -- recreates the tables from Migrations/
 --   dotnet run                   -- seeds maps and locations on startup
 --
