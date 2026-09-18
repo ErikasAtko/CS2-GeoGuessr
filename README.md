@@ -51,7 +51,8 @@ Example - Miron picks up issue #3, "Add scoring logic":
 
 ## Prerequisites
 
-.NET SDK 10, JetBrains Rider (or IDE of choice), Tailscale + will be filled in once the React project scaffold is created.
+.NET SDK 10, JetBrains Rider (or IDE of choice), Tailscale
+TypeScript 6, React 19
 
 
 ## Structure

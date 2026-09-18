@@ -13,6 +13,7 @@
 *.userosscache
 *.sln.docstates
 appsettings.Local.json
+claude.md
 
 # User-specific files (MonoDevelop/Xamarin Studio)
 *.userprefs
