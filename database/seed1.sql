@@ -1,6 +1,8 @@
-﻿INSERT INTO maps (code, display_name, minimap_url) VALUES
-('de_mirage', 'Mirage',  '/images/maps/de_mirage.png'),
-('de_dust2',  'Dust II', '/images/maps/de_dust2.png')
+﻿-- size_units: real-world (Hammer unit) width/height the square minimap image spans edge-to-edge,
+-- derived from each map's known radar scale (CS:GO/CS2 overview.txt) * 1024px image size.
+INSERT INTO maps (code, display_name, minimap_url, size_units) VALUES
+('de_mirage', 'Mirage',  '/images/maps/de_mirage.png', 5120),
+('de_dust2',  'Dust II', '/images/maps/de_dust2.png',  4505.6)
 ON CONFLICT (code) DO NOTHING;
 
 INSERT INTO locations (map_id, image_url, x, y) VALUES
