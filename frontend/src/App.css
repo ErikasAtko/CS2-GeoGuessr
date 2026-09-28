@@ -1,0 +1,106 @@
+.screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  padding: 24px;
+  box-sizing: border-box;
+}
+
+.start-screen p {
+  max-width: 480px;
+}
+
+.map-list {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  justify-content: center;
+  margin-top: 16px;
+}
+
+button {
+  font: inherit;
+  padding: 10px 20px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  cursor: pointer;
+}
+
+button:hover:not(:disabled) {
+  border-color: var(--accent-border);
+}
+
+button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.game-screen {
+  position: relative;
+  width: 100%;
+  padding: 0;
+}
+
+.screenshot {
+  width: 100%;
+  max-height: 70vh;
+  object-fit: cover;
+  display: block;
+}
+
+.minimap-panel {
+  position: absolute;
+  right: 16px;
+  bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  background: var(--bg);
+  padding: 8px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+}
+
+.minimap {
+  position: relative;
+  width: 220px;
+}
+
+.minimap img {
+  width: 100%;
+  display: block;
+  border-radius: 4px;
+}
+
+.minimap-clickable {
+  cursor: crosshair;
+}
+
+.pin {
+  position: absolute;
+  width: 14px;
+  height: 14px;
+  border-radius: 50%;
+  transform: translate(-50%, -50%);
+  border: 2px solid white;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.6);
+}
+
+.pin-guess {
+  background: var(--accent);
+}
+
+.pin-actual {
+  background: #2ecc71;
+}
+
+.result-screen .minimap {
+  width: 320px;
+}

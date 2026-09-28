@@ -12,8 +12,17 @@ builder.Services.AddDbContext<GameDbContext>(options => options
     .UseNpgsql(builder.Configuration.GetConnectionString("Default"))
     .UseSnakeCaseNamingConvention());
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("Frontend", policy => policy
+        .WithOrigins("http://localhost:5173")
+        .AllowAnyHeader()
+        .AllowAnyMethod());
+});
+
 var app = builder.Build();
 
+app.UseCors("Frontend");
 app.UseStaticFiles();
 
 app.MapMapsApi();

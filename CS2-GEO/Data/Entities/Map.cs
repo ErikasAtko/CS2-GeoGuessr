@@ -8,5 +8,8 @@ public class Map
 
     public string MinimapUrl { get; set; } = "";
 
+    /// <summary>Real-world width/height (Hammer units) the square minimap image spans edge-to-edge.</summary>
+    public double SizeUnits { get; set; }
+
     public List<Location> Locations { get; set; } = new();
 }
