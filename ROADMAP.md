@@ -6,17 +6,17 @@ This roadmap follows the Alpha / Beta / Final structure expected from the lab pr
 
 Features:
 
-- [ ] Basic UI, singleplayer only
-- [ ] Core gameplay loop: a screenshot from a CS2 map pops up, the full map pops up, the player clicks where on the map they think the screenshot was taken
-- [ ] Scoring based on the distance between the guess and the correct location
+- [x] Basic UI, singleplayer only
+- [x] Core gameplay loop: a screenshot from a CS2 map pops up, the full map pops up, the player clicks where on the map they think the screenshot was taken
+- [x] Scoring based on the distance between the guess and the correct location
 
 Requirement coverage still needed:
 
-- [ ] A user scenario that can be demonstrated end to end through a real interface (see [End-to-End Scenario](./README.md#end-to-end-scenario))
+- [x] A user scenario that can be demonstrated end to end through a real interface (see [End-to-End Scenario](./README.md#end-to-end-scenario))
 - [ ] Own `class`, `struct`, `record` and `enum` types, at least one of them immutable (e.g. an immutable `GuessResult` record, a `Point` struct for map coordinates, a `MapName` or `RoundStatus` enum)
-- [ ] Property usage in a `struct` and a `class`
-- [ ] Named and optional arguments in a real method signature (e.g. `CalculateScore(Point guess, Point actual, double maxDistance = 1000)`)
-- [ ] An extension method (e.g. `IEnumerable<Round>.AverageScore()`)
+- [x] Property usage in a `struct` and a `class`
+- [x] Named and optional arguments in a real method signature (e.g. `CalculateScore(Point guess, Point actual, double maxDistance = 1000)`)
+- [x] An extension method (e.g. `IEnumerable<Round>.AverageScore()`)
 - [ ] Iterating through collections the right way
 - [ ] A stream used to load data (e.g. reading map/screenshot metadata from a file or web service)
 - [ ] LINQ to Objects used where appropriate (or justified where it isn't)
