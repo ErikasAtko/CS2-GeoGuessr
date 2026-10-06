@@ -8,5 +8,5 @@ public class GameDtos   //Data Transfer Objects for Api
 
     public record GuessRequestDto(double X, double Y);
 
-    public record GuessResultDto(double ActualX, double ActualY, double DistanceUnits, int Score);
+    public record GuessResultDto(double ActualX, double ActualY, double DistanceUnits, int Score, string Tier);
 }
