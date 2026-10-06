@@ -13,7 +13,7 @@ Features:
 Requirement coverage still needed:
 
 - [x] A user scenario that can be demonstrated end to end through a real interface (see [End-to-End Scenario](./README.md#end-to-end-scenario))
-- [ ] Own `class`, `struct`, `record` and `enum` types, at least one of them immutable (e.g. an immutable `GuessResult` record, a `Point` struct for map coordinates, a `MapName` or `RoundStatus` enum)
+- [x] Own `class`, `struct`, `record` and `enum` types, at least one of them immutable (e.g. an immutable `GuessResult` record, a `Point` struct for map coordinates, a `MapName` or `RoundStatus` enum)
 - [x] Property usage in a `struct` and a `class`
 - [x] Named and optional arguments in a real method signature (e.g. `CalculateScore(Point guess, Point actual, double maxDistance = 1000)`)
 - [x] An extension method (e.g. `IEnumerable<Round>.AverageScore()`)
