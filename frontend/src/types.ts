@@ -18,6 +18,7 @@ export interface GuessResultDto {
   actualY: number
   distanceUnits: number
   score: number
+  tier: string
 }
 
 export interface GuessPoint {

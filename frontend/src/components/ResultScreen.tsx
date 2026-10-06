@@ -12,7 +12,7 @@ interface Props {
 export default function ResultScreen({ round, guess, result, onNext }: Props) {
   return (
     <div className="screen result-screen">
-      <h2>Score: {result.score}</h2>
+      <h2>Score: {result.score} ({result.tier})</h2>
       <p>Distance: {Math.round(result.distanceUnits)} units</p>
       <MinimapGuesser
         minimapUrl={assetUrl(round.minimapUrl)}

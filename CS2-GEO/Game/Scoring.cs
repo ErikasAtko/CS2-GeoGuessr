@@ -26,4 +26,13 @@ public static class Scoring
 
         return new GuessResult(actual, distance, score);
     }
+
+    public static ScoreTier TierFor(int score) => score switch
+    {
+        MaxScore => ScoreTier.Perfect,
+        >= 3500 => ScoreTier.Great,
+        >= 1500 => ScoreTier.Good,
+        > 0 => ScoreTier.Poor,
+        _ => ScoreTier.Miss,
+    };
 }

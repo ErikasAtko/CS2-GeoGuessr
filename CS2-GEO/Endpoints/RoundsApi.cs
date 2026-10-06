@@ -32,11 +32,11 @@ public static class RoundsApi
             if (location is null)
                 return Results.NotFound("Round not found");
 
-            var result = Scoring.CalculateResult(new Point(guess.X, guess.Y), new Point(location.X, location.Y));
+            var result = Scoring.CalculateResult(new Point(guess.X, guess.Y), new Point(location.X, location.Y), maxDistance: 0.6);
             var distanceUnits = result.Distance * location.Map.SizeUnits;
 
             return Results.Ok(new GameDtos.GuessResultDto(
-                result.ActualLocation.X, result.ActualLocation.Y, distanceUnits, result.Score));
+                result.ActualLocation.X, result.ActualLocation.Y, distanceUnits, result.Score, result.Tier.ToString()));
         });
     }
 }
