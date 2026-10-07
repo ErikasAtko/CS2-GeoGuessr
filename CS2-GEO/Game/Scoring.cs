@@ -5,8 +5,9 @@ public static class Scoring
     public const int MaxScore = 5000;
 
     /// <summary>
-    /// Exponential falloff: full score inside perfectRadius, then MaxScore * e^(-distance / decay),
-    /// and zero at or beyond maxDistance. All distances are in normalized minimap units.
+    /// Exponential falloff: full score inside perfectRadius, then MaxScore * e^(-(distance - perfectRadius) / decay)
+    /// so the curve continues smoothly from the radius edge, and zero at or beyond maxDistance.
+    /// All distances are in normalized minimap units.
     /// </summary>
     public static GuessResult CalculateResult(
         Point guess,
@@ -21,7 +22,7 @@ public static class Scoring
         {
             _ when distance <= perfectRadius => MaxScore,
             _ when distance >= maxDistance => 0,
-            _ => (int)Math.Round(MaxScore * Math.Exp(-distance / decay)),
+            _ => (int)Math.Round(MaxScore * Math.Exp(-(distance - perfectRadius) / decay)),
         };
 
         return new GuessResult(actual, distance, score);
