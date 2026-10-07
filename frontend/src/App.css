@@ -104,3 +104,39 @@ button:disabled {
 .result-screen .minimap {
   width: 320px;
 }
+
+.game-progress {
+  padding: 8px 16px;
+  text-align: center;
+  font-weight: 600;
+  border-bottom: 1px solid var(--border);
+}
+
+.summary-total {
+  font-size: 2rem;
+  font-weight: 700;
+  margin: 0;
+}
+
+.summary-heading {
+  margin: 16px 0 0;
+}
+
+.summary-table {
+  border-collapse: collapse;
+}
+
+.summary-table th,
+.summary-table td {
+  padding: 6px 12px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+}
+
+.summary-thumb {
+  width: 96px;
+  height: 54px;
+  object-fit: cover;
+  border-radius: 4px;
+  display: block;
+}
