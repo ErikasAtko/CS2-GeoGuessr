@@ -33,11 +33,13 @@ Example - Miron picks up issue #3, "Add scoring logic":
 
 The rules are written down in config files, and tools apply them - not memory.
 
-| Part | Rules live in | Fix everything | Check only (what CI would run) |
+| Part | Rules live in | Fix everything | Check only (what CI runs) |
 |------|---------------|----------------|-------------------------------|
 | Backend (C#) | [`.editorconfig`](./.editorconfig) | `dotnet format` (repo root) | `dotnet format --verify-no-changes` |
 | Frontend (TS/React/CSS) | [`frontend/.prettierrc.json`](./frontend/.prettierrc.json) | `npm run format` (in `frontend/`) | `npm run format:check` |
 | Frontend lint | [`frontend/.oxlintrc.json`](./frontend/.oxlintrc.json) | - | `npm run lint` |
+
+The [Code style](./.github/workflows/code-style.yml) GitHub Actions check runs the "check only" commands on every pull request and fails if anything is unformatted - fix it by running the formatter and pushing again. Line endings are normalized by [`.gitattributes`](./.gitattributes), so they don't depend on your git settings.
 
 Run both formatters before every commit. Turn on format-on-save so you rarely have to:
 
