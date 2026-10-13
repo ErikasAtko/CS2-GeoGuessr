@@ -1,4 +1,4 @@
-﻿using CS2_GEO.Data.Entities;
+using CS2_GEO.Data.Entities;
 using Microsoft.EntityFrameworkCore;
 
 namespace CS2_GEO.Data;

@@ -1,4 +1,4 @@
-﻿using CS2_GEO.Data;
+using CS2_GEO.Data;
 using CS2_GEO.Dtos;
 using CS2_GEO.Game;
 using Microsoft.EntityFrameworkCore;
