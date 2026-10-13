@@ -1,0 +1,14 @@
+# Store text files with LF in the repository; git converts to your OS's line endings on checkout.
+# This makes line endings independent of each person's core.autocrlf setting.
+* text=auto
+
+# Visual Studio / Rider expect CRLF in solution files.
+*.sln text eol=crlf
+
+# Binary assets: never touch line endings or diff them as text.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.webp binary
