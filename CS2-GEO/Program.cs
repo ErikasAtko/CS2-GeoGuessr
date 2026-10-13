@@ -27,5 +27,6 @@ app.UseStaticFiles();
 
 app.MapMapsApi();
 app.MapRoundsApi();
+app.MapGamesApi();
 
 app.Run();

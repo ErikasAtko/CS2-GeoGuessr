@@ -6,10 +6,11 @@ interface Props {
   round: RoundDto
   guess: GuessPoint
   result: GuessResultDto
+  nextLabel: string
   onNext: () => void
 }
 
-export default function ResultScreen({ round, guess, result, onNext }: Props) {
+export default function ResultScreen({ round, guess, result, nextLabel, onNext }: Props) {
   return (
     <div className="screen result-screen">
       <h2>Score: {result.score} ({result.tier})</h2>
@@ -19,7 +20,7 @@ export default function ResultScreen({ round, guess, result, onNext }: Props) {
         guess={guess}
         actual={{ x: result.actualX, y: result.actualY }}
       />
-      <button onClick={onNext}>Next round</button>
+      <button onClick={onNext}>{nextLabel}</button>
     </div>
   )
 }

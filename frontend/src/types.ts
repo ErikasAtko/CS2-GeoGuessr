@@ -21,6 +21,32 @@ export interface GuessResultDto {
   tier: string
 }
 
+export interface GameDto {
+  mapCode: string | null
+  rounds: RoundDto[]
+}
+
+export interface RoundGuessDto {
+  locationId: number
+  x: number
+  y: number
+}
+
+export interface RoundSummaryDto {
+  roundNumber: number
+  imageUrl: string
+  distanceUnits: number
+  score: number
+  tier: string
+}
+
+export interface GameSummaryDto {
+  totalScore: number
+  maxPossibleScore: number
+  averageScore: number
+  rounds: RoundSummaryDto[]
+}
+
 export interface GuessPoint {
   x: number
   y: number

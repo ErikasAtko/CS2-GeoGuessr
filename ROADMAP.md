@@ -17,10 +17,10 @@ Requirement coverage still needed:
 - [x] Property usage in a `struct` and a `class`
 - [x] Named and optional arguments in a real method signature (e.g. `CalculateScore(Point guess, Point actual, double maxDistance = 1000)`)
 - [x] An extension method (e.g. `IEnumerable<Round>.AverageScore()`)
-- [ ] Iterating through collections the right way
+- [x] Iterating through collections the right way
 - [ ] A stream used to load data (e.g. reading map/screenshot metadata from a file or web service)
-- [ ] LINQ to Objects used where appropriate (or justified where it isn't)
-- [ ] One standard .NET interface implemented (e.g. `IComparable<Round>` to sort rounds by score)
+- [x] LINQ to Objects used where appropriate (or justified where it isn't)
+- [x] One standard .NET interface implemented (e.g. `IComparable<Round>` to sort rounds by score)
 - [ ] All changes reviewed via pull requests, each with a description of what/why; every team member has authored at least 3 merged PRs and meaningfully reviewed at least 3 teammates' PRs
 - [ ] Uniform coding style across the project
 

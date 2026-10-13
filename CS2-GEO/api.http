@@ -6,3 +6,15 @@ GET {{host}}/api/maps/de_mirage
 ###
 GET {{host}}/api/rounds/random?map=de_mirage
 ###
+GET {{host}}/api/games/new?map=de_dust2&rounds=5
+###
+POST {{host}}/api/games/summary
+Content-Type: application/json
+
+{
+  "guesses": [
+    { "locationId": 1, "x": 0.2, "y": 0.2 },
+    { "locationId": 2, "x": 0.5, "y": 0.5 }
+  ]
+}
+###
