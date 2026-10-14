@@ -83,22 +83,29 @@ Each member has his own database on the server, which he can access through tail
 
 #### Initializing DB after cloning git
 
-In Project Console:
+Configure `CS2-GEO/appsettings.Local.json` with your database connection
+string. From `CS2-GEO/`, run:
+
 ```
 dotnet restore
-dotnet ef database update
+dotnet run
 ```
+
+Startup automatically applies EF migrations and fills an empty database
+with maps and locations from `Data/Seed/seed.json`.
 
 #### Remaking DB
 
-Launch ./database/drop-tables.sql
+Run `database/drop-tables.sql` against your personal database.
 
-In Project Console:
+Then, from `CS2-GEO/`, run:
+
 ```
-dotnet ef database update
+dotnet run
 ```
 
-Launch ./database/seed1.sql to fill the database with initial data
+Startup recreates the tables through EF migrations and seeds the data.
+There is no need to run seed SQL manually.
 
 
 ## Build and Run
