@@ -22,6 +22,22 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
+//EF UPDATE
+await using (var scope = app.Services.CreateAsyncScope())
+{
+    var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
+
+    await db.Database.MigrateAsync();
+
+    var seedPath = Path.Combine(
+        AppContext.BaseDirectory,
+        "Data",
+        "Seed",
+        "seed.json");
+
+    await DatabaseSeeder.SeedAsync(db, seedPath);
+}
+
 app.UseCors("Frontend");
 app.UseStaticFiles();
 

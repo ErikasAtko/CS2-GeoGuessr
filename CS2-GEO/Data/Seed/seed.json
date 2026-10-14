@@ -1,0 +1,41 @@
+﻿{
+  "maps": [
+    {
+      "code": "de_mirage",
+      "displayName": "Mirage",
+      "minimapUrl": "/images/maps/de_mirage.png",
+      "sizeUnits": 5120,
+      "locations": [
+        { "imageUrl": "/images/de_mirage/0001.jpg", "x": 0.206, "y": 0.187 },
+        { "imageUrl": "/images/de_mirage/0002.jpg", "x": 0.437, "y": 0.277 },
+        { "imageUrl": "/images/de_mirage/0003.jpg", "x": 0.422, "y": 0.351 },
+        { "imageUrl": "/images/de_mirage/0004.jpg", "x": 0.666, "y": 0.314 },
+        { "imageUrl": "/images/de_mirage/0005.jpg", "x": 0.548, "y": 0.653 },
+        { "imageUrl": "/images/de_mirage/0006.jpg", "x": 0.809, "y": 0.693 }
+      ]
+    },
+    {
+      "code": "de_dust2",
+      "displayName": "Dust II",
+      "minimapUrl": "/images/maps/de_dust2.png",
+      "sizeUnits": 4505.6,
+      "locations": [
+        { "imageUrl": "/images/de_dust2/0001.jpg", "x": 0.4595, "y": 0.7703 },
+        { "imageUrl": "/images/de_dust2/0002.jpg", "x": 0.6048, "y": 0.1549 },
+        { "imageUrl": "/images/de_dust2/0003.jpg", "x": 0.6807, "y": 0.5344 },
+        { "imageUrl": "/images/de_dust2/0004.jpg", "x": 0.3121, "y": 0.1392 },
+        { "imageUrl": "/images/de_dust2/0005.jpg", "x": 0.2642, "y": 0.6904 },
+        { "imageUrl": "/images/de_dust2/0006.jpg", "x": 0.4054, "y": 0.3899 },
+        { "imageUrl": "/images/de_dust2/0007.jpg", "x": 0.1996, "y": 0.3036 },
+        { "imageUrl": "/images/de_dust2/0008.jpg", "x": 0.9268, "y": 0.5910 },
+        { "imageUrl": "/images/de_dust2/0009.jpg", "x": 0.7200, "y": 0.8013 },
+        { "imageUrl": "/images/de_dust2/0010.jpg", "x": 0.0925, "y": 0.6299 },
+        { "imageUrl": "/images/de_dust2/0011.jpg", "x": 0.0640, "y": 0.4621 },
+        { "imageUrl": "/images/de_dust2/0012.jpg", "x": 0.9000, "y": 0.1687 },
+        { "imageUrl": "/images/de_dust2/0013.jpg", "x": 0.9202, "y": 0.4703 },
+        { "imageUrl": "/images/de_dust2/0014.jpg", "x": 0.3052, "y": 0.7830 },
+        { "imageUrl": "/images/de_dust2/0015.jpg", "x": 0.7875, "y": 0.0852 }
+      ]
+    }
+  ]
+}
