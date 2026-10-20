@@ -1,4 +1,4 @@
-﻿using CS2_GEO.Data;
+using CS2_GEO.Data;
 using CS2_GEO.Endpoints;
 using Microsoft.EntityFrameworkCore;
 

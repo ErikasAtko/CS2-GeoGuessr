@@ -21,12 +21,8 @@ export default function MinimapGuesser({ minimapUrl, guess, actual, onGuess }: P
   return (
     <div className={`minimap${onGuess ? ' minimap-clickable' : ''}`} onClick={handleClick}>
       <img src={minimapUrl} alt="Minimap" draggable={false} />
-      {guess && (
-        <div className="pin pin-guess" style={{ left: `${guess.x * 100}%`, top: `${guess.y * 100}%` }} />
-      )}
-      {actual && (
-        <div className="pin pin-actual" style={{ left: `${actual.x * 100}%`, top: `${actual.y * 100}%` }} />
-      )}
+      {guess && <div className="pin pin-guess" style={{ left: `${guess.x * 100}%`, top: `${guess.y * 100}%` }} />}
+      {actual && <div className="pin pin-actual" style={{ left: `${actual.x * 100}%`, top: `${actual.y * 100}%` }} />}
     </div>
   )
 }

@@ -1,4 +1,4 @@
-﻿namespace CS2_GEO.Dtos;
+namespace CS2_GEO.Dtos;
 
 public class GameDtos   //Data Transfer Objects for Api
 {

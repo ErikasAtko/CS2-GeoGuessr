@@ -30,22 +30,16 @@ See [ROADMAP.md](./ROADMAP.md) for the Alpha / Beta / Final scope.
 - ASP.NET Core (backend-dominant design, per course requirements)
 - React (frontend)
 
-## Branch Naming Rules
+## Contributing
 
-Pattern: `[initials]/[issue-number]-[short-title]`
+Branch naming, pull request rules and the coding style (with the commands that apply it) are in [CONTRIBUTING.md](./CONTRIBUTING.md).
 
-Example - Miron picks up issue #3, "Add scoring logic":
+Short version - before every commit:
 
-`mb/3-add-scoring-logic`
-
-- Initials first (lowercase), separated from the rest by `/`.
-- Issue number next, then a short kebab-case description of the task.
-- Branch off `main`; open a pull request back into `main` when ready for review.
-
-## Code Formatting
-
-- Backend (C#): run `dotnet format` before committing, once the backend project exists.
-- Frontend (JavaScript/React): match whatever formatter (Prettier/ESLint) the frontend project is set up with, once it exists.
+```
+dotnet format              # repo root, C#
+cd frontend && npm run format   # TypeScript/React/CSS
+```
 
 ## Prerequisites
 
