@@ -112,7 +112,7 @@ You need both the backend and the frontend running at the same time - they're se
 2. From `CS2-GEO/`:
    ```
    dotnet restore
-   dotnet ef database update
+   dotnet build
    dotnet run
    ```
 3. The API starts on `http://localhost:5080` (see `Properties/launchSettings.json`).
