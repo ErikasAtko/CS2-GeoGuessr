@@ -50,19 +50,11 @@ public static class GamesApi
                 .Where(l => locationIds.Contains(l.Id))
                 .ToDictionaryAsync(l => l.Id);
 
-            var rounds = new List<Round>(request.Guesses.Count);
-            foreach (var (guess, index) in request.Guesses.Select((g, i) => (g, i)))
-            {
-                if (!locations.TryGetValue(guess.LocationId, out var location))
-                    return Results.NotFound($"Location {guess.LocationId} not found");
-
-                var result = Scoring.CalculateResult(
-                    new Point(guess.X, guess.Y), new Point(location.X, location.Y), maxDistance: 0.6);
-                rounds.Add(new Round(index + 1, guess.LocationId, result));
-            }
+            var (rounds, missingLocationId) = GameSummary.ScoreRounds(request.Guesses, locations);
+            if (rounds is null)
+                return Results.NotFound($"Location {missingLocationId} not found");
 
             var summaryRounds = rounds
-                .Order()
                 .Select(r =>
                 {
                     var location = locations[r.LocationId];

@@ -4,6 +4,9 @@ public static class Scoring
 {
     public const int MaxScore = 5000;
 
+    /// <summary>Guesses at or beyond this normalized distance from the actual location score zero.</summary>
+    public const double MaxGuessDistance = 0.6;
+
     /// <summary>
     /// Exponential falloff: full score inside perfectRadius, then MaxScore * e^(-(distance - perfectRadius) / decay)
     /// so the curve continues smoothly from the radius edge, and zero at or beyond maxDistance.
@@ -14,7 +17,7 @@ public static class Scoring
         Point actual,
         double decay = 0.15,
         double perfectRadius = 0.01,
-        double maxDistance = 0.5)
+        double maxDistance = MaxGuessDistance)
     {
         var distance = guess.DistanceTo(actual);
 
