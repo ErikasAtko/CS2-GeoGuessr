@@ -66,6 +66,13 @@ button:disabled {
   border-radius: 8px;
   border: 1px solid var(--border);
   box-shadow: var(--shadow);
+  opacity: 0.35;
+  transition: opacity 0.15s ease;
+}
+
+.minimap-panel:hover,
+.minimap-panel:focus-within {
+  opacity: 1;
 }
 
 .minimap {
