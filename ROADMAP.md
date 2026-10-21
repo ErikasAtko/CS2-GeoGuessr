@@ -21,8 +21,8 @@ Requirement coverage still needed:
 - [x] A stream used to load data (e.g. reading map/screenshot metadata from a file or web service)
 - [x] LINQ to Objects used where appropriate (or justified where it isn't)
 - [x] One standard .NET interface implemented (e.g. `IComparable<Round>` to sort rounds by score)
-- [ ] All changes reviewed via pull requests, each with a description of what/why; every team member has authored at least 3 merged PRs and meaningfully reviewed at least 3 teammates' PRs
-- [ ] Uniform coding style across the project
+- [x] All changes reviewed via pull requests, each with a description of what/why; every team member has authored at least 3 merged PRs and meaningfully reviewed at least 3 teammates' PRs
+- [x] Uniform coding style across the project
 
 ## Beta - matches Lab Assignment #2 (deadline: week 11, 1.5 points)
 
