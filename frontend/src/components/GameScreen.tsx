@@ -13,13 +13,13 @@ export default function GameScreen({ round, onGuess }: Props) {
 
   return (
     <div className="screen game-screen">
-      <img className="screenshot" src={assetUrl(round.imageUrl)} alt="Guess the location" />
       <div className="minimap-panel">
         <MinimapGuesser minimapUrl={assetUrl(round.minimapUrl)} guess={pending ?? undefined} onGuess={setPending} />
         <button disabled={!pending} onClick={() => pending && onGuess(pending)}>
           Guess
         </button>
       </div>
+      <img className="screenshot" src={assetUrl(round.imageUrl)} alt="Guess the location" />
     </div>
   )
 }

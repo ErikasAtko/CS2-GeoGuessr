@@ -43,41 +43,43 @@ button:disabled {
 .game-screen {
   position: relative;
   width: 100%;
-  padding: 0;
 }
 
 .screenshot {
-  width: 100%;
-  max-height: 70vh;
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  width: 320px;
+  max-width: 40vw;
+  aspect-ratio: 16 / 9;
   object-fit: cover;
   display: block;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  box-shadow: var(--shadow);
+  transition: width 0.15s ease;
+  z-index: 1;
+}
+
+.screenshot:hover {
+  width: 640px;
+  max-width: 80vw;
 }
 
 .minimap-panel {
-  position: absolute;
-  right: 16px;
-  bottom: 16px;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 8px;
-  background: var(--bg);
-  padding: 8px;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  box-shadow: var(--shadow);
-  opacity: 0.35;
-  transition: opacity 0.15s ease;
-}
-
-.minimap-panel:hover,
-.minimap-panel:focus-within {
-  opacity: 1;
 }
 
 .minimap {
   position: relative;
   width: 220px;
+}
+
+.game-screen .minimap {
+  width: min(70vh, 90vw);
 }
 
 .minimap img {
