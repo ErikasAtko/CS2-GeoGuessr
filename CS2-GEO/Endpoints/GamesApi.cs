@@ -1,7 +1,5 @@
-using CS2_GEO.Data;
 using CS2_GEO.Dtos;
-using CS2_GEO.Game;
-using Microsoft.EntityFrameworkCore;
+using CS2_GEO.Services;
 
 namespace CS2_GEO.Endpoints;
 
@@ -12,66 +10,28 @@ public static class GamesApi
         var group = app.MapGroup("/api/games");
 
         // GET /api/games/new?map=de_dust2&rounds=5 - distinct random locations for one game
-        group.MapGet("/new", async (string? map, GameDbContext db, int rounds = 5) =>
+        group.MapGet("/new", async (string? map, IGamesService service, int rounds = 5) =>
         {
-            if (rounds < 1)
-                return Results.BadRequest("A game needs at least one round");
-
-            var query = db.Locations.AsQueryable();
-
-            if (map is not null)
-                query = query.Where(l => l.Map.Code == map);
-
-            // Each row is picked at most once, so locations never repeat within a game.
-            var gameRounds = await query
-                .OrderBy(_ => EF.Functions.Random())
-                .Take(rounds)
-                .Select(l => new GameDtos.RoundDto(l.Id, l.Map.Code, l.Map.MinimapUrl, l.ImageUrl))
-                .ToListAsync();
-
-            return gameRounds.Count == 0
-                ? Results.NotFound("No locations found")
-                : Results.Ok(new GameDtos.GameDto(map, gameRounds));
+            var result = await service.CreateNewGameAsync(map, rounds);
+            return result.Error switch
+            {
+                NewGameError.TooFewRounds => Results.BadRequest("A game needs at least one round"),
+                NewGameError.NoLocationsFound => Results.NotFound("No locations found"),
+                _ => Results.Ok(result.Game),
+            };
         });
 
         // POST /api/games/summary - re-scores every guess and returns the rounds best to worst
-        group.MapPost("/summary", async (GameDtos.GameSummaryRequestDto request, GameDbContext db) =>
+        group.MapPost("/summary", async (GameDtos.GameSummaryRequestDto request, IGamesService service) =>
         {
-            if (request.Guesses.Count == 0)
-                return Results.BadRequest("No guesses submitted");
-
-            var locationIds = request.Guesses.Select(g => g.LocationId).ToList();
-            if (locationIds.Distinct().Count() != locationIds.Count)
-                return Results.BadRequest("Each location can only be guessed once per game");
-
-            // One query for all locations, then O(1) lookups while iterating.
-            var locations = await db.Locations
-                .Include(l => l.Map)
-                .Where(l => locationIds.Contains(l.Id))
-                .ToDictionaryAsync(l => l.Id);
-
-            var (rounds, missingLocationId) = GameSummary.ScoreRounds(request.Guesses, locations);
-            if (rounds is null)
-                return Results.NotFound($"Location {missingLocationId} not found");
-
-            var summaryRounds = rounds
-                .Select(r =>
-                {
-                    var location = locations[r.LocationId];
-                    return new GameDtos.RoundSummaryDto(
-                        r.RoundNumber,
-                        location.ImageUrl,
-                        r.Result.Distance * location.Map.SizeUnits,
-                        r.Result.Score,
-                        r.Result.Tier.ToString());
-                })
-                .ToList();
-
-            return Results.Ok(new GameDtos.GameSummaryDto(
-                TotalScore: rounds.Sum(r => r.Result.Score),
-                MaxPossibleScore: rounds.Count * Scoring.MaxScore,
-                AverageScore: rounds.Average(r => r.Result.Score),
-                Rounds: summaryRounds));
+            var result = await service.BuildSummaryAsync(request);
+            return result.Error switch
+            {
+                SummaryError.NoGuesses => Results.BadRequest("No guesses submitted"),
+                SummaryError.DuplicateGuess => Results.BadRequest("Each location can only be guessed once per game"),
+                SummaryError.LocationNotFound => Results.NotFound($"Location {result.MissingLocationId} not found"),
+                _ => Results.Ok(result.Summary),
+            };
         });
     }
 }
