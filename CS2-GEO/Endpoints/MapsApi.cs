@@ -1,6 +1,4 @@
-using CS2_GEO.Data;
-using CS2_GEO.Dtos;
-using Microsoft.EntityFrameworkCore;
+using CS2_GEO.Services;
 
 namespace CS2_GEO.Endpoints;
 
@@ -11,20 +9,13 @@ public static class MapsApi
         var group = app.MapGroup("/api/maps");
 
         // GET /api/maps - all maps
-        group.MapGet("/", async (GameDbContext db) =>
-            await db.Maps
-                .OrderBy(m => m.DisplayName)
-                .Select(m => new GameDtos.MapDto(m.Id, m.Code, m.DisplayName, m.MinimapUrl, m.Locations.Count))
-                .ToListAsync());
+        group.MapGet("/", async (IMapsService service) =>
+            Results.Ok(await service.GetAllAsync()));
 
         // GET /api/maps/de_mirage
-        group.MapGet("/{code}", async (string code, GameDbContext db) =>
+        group.MapGet("/{code}", async (string code, IMapsService service) =>
         {
-            var map = await db.Maps
-                .Where(m => m.Code == code)
-                .Select(m => new GameDtos.MapDto(m.Id, m.Code, m.DisplayName, m.MinimapUrl, m.Locations.Count))
-                .FirstOrDefaultAsync();
-
+            var map = await service.GetByCodeAsync(code);
             return map is null ? Results.NotFound() : Results.Ok(map);
         });
     }

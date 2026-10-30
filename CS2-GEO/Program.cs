@@ -1,5 +1,6 @@
 using CS2_GEO.Data;
 using CS2_GEO.Endpoints;
+using CS2_GEO.Services;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -19,6 +20,10 @@ builder.Services.AddCors(options =>
         .AllowAnyHeader()
         .AllowAnyMethod());
 });
+
+builder.Services.AddScoped<IMapsService, MapsService>();
+builder.Services.AddScoped<IGamesService, GamesService>();
+builder.Services.AddScoped<IRoundsService, RoundsService>();
 
 var app = builder.Build();
 
