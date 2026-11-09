@@ -22,7 +22,7 @@ public static class GamesApi
         });
 
         // POST /api/games/summary - re-scores every guess and returns the rounds best to worst
-        group.MapPost("/summary", async (GameDtos.GameSummaryRequestDto request, IGamesService service) =>
+        group.MapPost("/summary", async (GameSummaryRequestDto request, IGamesService service) =>
         {
             var result = await service.BuildSummaryAsync(request);
             return result.Error switch

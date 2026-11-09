@@ -1,35 +1,24 @@
-using CS2_GEO.Data;
+using CS2_GEO.Data.Repositories;
 using CS2_GEO.Dtos;
 using CS2_GEO.Game;
-using Microsoft.EntityFrameworkCore;
 
 namespace CS2_GEO.Services;
 
-public class GamesService(GameDbContext db) : IGamesService
+public class GamesService(ILocationRepository locations, IGameScorer scorer, IScoreCalculator calculator) : IGamesService
 {
     public async Task<NewGameResult> CreateNewGameAsync(string? map, int rounds)
     {
         if (rounds < 1)
             return new NewGameResult(null, NewGameError.TooFewRounds);
 
-        var query = db.Locations.AsQueryable();
+        var picked = await locations.GetRandomAsync(map, rounds);
 
-        if (map is not null)
-            query = query.Where(l => l.Map.Code == map);
-
-        // Each row is picked at most once, so locations never repeat within a game.
-        var gameRounds = await query
-            .OrderBy(_ => EF.Functions.Random())
-            .Take(rounds)
-            .Select(l => new GameDtos.RoundDto(l.Id, l.Map.Code, l.Map.MinimapUrl, l.ImageUrl))
-            .ToListAsync();
-
-        return gameRounds.Count == 0
+        return picked.Count == 0
             ? new NewGameResult(null, NewGameError.NoLocationsFound)
-            : new NewGameResult(new GameDtos.GameDto(map, gameRounds), null);
+            : new NewGameResult(new GameDto(map, picked.Select(l => l.ToRoundDto()).ToList()), null);
     }
 
-    public async Task<SummaryResult> BuildSummaryAsync(GameDtos.GameSummaryRequestDto request)
+    public async Task<SummaryResult> BuildSummaryAsync(GameSummaryRequestDto request)
     {
         if (request.Guesses.Count == 0)
             return new SummaryResult(null, SummaryError.NoGuesses);
@@ -39,31 +28,37 @@ public class GamesService(GameDbContext db) : IGamesService
             return new SummaryResult(null, SummaryError.DuplicateGuess);
 
         // One query for all locations, then O(1) lookups while iterating.
-        var locations = await db.Locations
-            .Include(l => l.Map)
-            .Where(l => locationIds.Contains(l.Id))
-            .ToDictionaryAsync(l => l.Id);
+        var found = await locations.GetByIdsAsync(locationIds);
 
-        var (rounds, missingLocationId) = GameSummary.ScoreRounds(request.Guesses, locations);
-        if (rounds is null)
+        var missingLocationId = locationIds
+            .Where(id => !found.ContainsKey(id))
+            .Select(id => (int?)id)
+            .FirstOrDefault();
+        if (missingLocationId is not null)
             return new SummaryResult(null, SummaryError.LocationNotFound, missingLocationId);
+
+        var guesses = request.Guesses
+            .Select(g => new RoundGuess(g.LocationId, new Point(g.X, g.Y), found[g.LocationId].ToPoint()))
+            .ToList();
+
+        var rounds = scorer.ScoreRounds(guesses);
 
         var summaryRounds = rounds
             .Select(r =>
             {
-                var location = locations[r.LocationId];
-                return new GameDtos.RoundSummaryDto(
+                var location = found[r.LocationId];
+                return new RoundSummaryDto(
                     r.RoundNumber,
                     location.ImageUrl,
-                    r.Result.Distance * location.Map.SizeUnits,
+                    location.ToMapUnits(r.Result.Distance),
                     r.Result.Score,
                     r.Result.Tier.ToString());
             })
             .ToList();
 
-        var summary = new GameDtos.GameSummaryDto(
+        var summary = new GameSummaryDto(
             TotalScore: rounds.Sum(r => r.Result.Score),
-            MaxPossibleScore: rounds.Count * Scoring.MaxScore,
+            MaxPossibleScore: rounds.Count * calculator.MaxScore,
             AverageScore: rounds.Average(r => r.Result.Score),
             Rounds: summaryRounds);
 

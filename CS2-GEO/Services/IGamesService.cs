@@ -8,7 +8,7 @@ public enum NewGameError
     NoLocationsFound,
 }
 
-public record NewGameResult(GameDtos.GameDto? Game, NewGameError? Error);
+public record NewGameResult(GameDto? Game, NewGameError? Error);
 
 public enum SummaryError
 {
@@ -17,11 +17,11 @@ public enum SummaryError
     LocationNotFound,
 }
 
-public record SummaryResult(GameDtos.GameSummaryDto? Summary, SummaryError? Error, int? MissingLocationId = null);
+public record SummaryResult(GameSummaryDto? Summary, SummaryError? Error, int? MissingLocationId = null);
 
 public interface IGamesService
 {
     Task<NewGameResult> CreateNewGameAsync(string? map, int rounds);
 
-    Task<SummaryResult> BuildSummaryAsync(GameDtos.GameSummaryRequestDto request);
+    Task<SummaryResult> BuildSummaryAsync(GameSummaryRequestDto request);
 }
