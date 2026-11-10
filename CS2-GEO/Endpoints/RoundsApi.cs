@@ -13,7 +13,7 @@ public static class RoundsApi
             return round is null ? Results.NotFound("Round not found") : Results.Ok(round);
         });
 
-        app.MapPost("/api/rounds/{locationId:int}/guess", async (int locationId, GameDtos.GuessRequestDto guess, IRoundsService service) =>
+        app.MapPost("/api/rounds/{locationId:int}/guess", async (int locationId, GuessRequestDto guess, IRoundsService service) =>
         {
             var result = await service.SubmitGuessAsync(locationId, guess);
             return result is null ? Results.NotFound("Round not found") : Results.Ok(result);

@@ -4,7 +4,7 @@ namespace CS2_GEO.Services;
 
 public interface IMapsService
 {
-    Task<List<GameDtos.MapDto>> GetAllAsync();
+    Task<List<MapDto>> GetAllAsync();
 
-    Task<GameDtos.MapDto?> GetByCodeAsync(string code);
+    Task<MapDto?> GetByCodeAsync(string code);
 }
