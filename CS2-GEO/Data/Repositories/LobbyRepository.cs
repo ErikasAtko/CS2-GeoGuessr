@@ -5,10 +5,10 @@ namespace CS2_GEO.Data.Repositories;
 
 public class LobbyRepository(GameDbContext db) : ILobbyRepository
 {
-    private readonly QueryRepository<Lobby> lobbies = new(db);
+    private readonly QueryRepository<Lobby> _lobbies = new(db);
 
     public Task<Lobby?> GetByJoinCodeAsync(string joinCode) =>
-        lobbies.FindAsync(
+        _lobbies.FindAsync(
             l => l.JoinCode == joinCode,
             q => q.Include(l => l.Members).ThenInclude(m => m.Player));
 
@@ -24,8 +24,8 @@ public class LobbyRepository(GameDbContext db) : ILobbyRepository
         };
         lobby.Members.Add(new LobbyMembership { PlayerId = hostPlayerId, IsReady = true, JoinedAt = DateTime.UtcNow });
 
-        lobbies.Add(lobby);
-        await lobbies.SaveChangesAsync();
+        _lobbies.Add(lobby);
+        await _lobbies.SaveChangesAsync();
 
         // Reload so Members[].Player is populated for DTO mapping.
         return (await GetByJoinCodeAsync(joinCode))!;

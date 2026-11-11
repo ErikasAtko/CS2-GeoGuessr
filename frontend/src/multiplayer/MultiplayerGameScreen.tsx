@@ -63,18 +63,16 @@ export default function MultiplayerGameScreen({
               ))}
           </tbody>
         </table>
-        {roundResult.nextRound ? (
-          <button onClick={onContinue}>Next round</button>
-        ) : (
-          <p>Finishing match...</p>
-        )}
+        {roundResult.nextRound ? <button onClick={onContinue}>Next round</button> : <p>Finishing match...</p>}
       </div>
     )
   }
 
   return (
     <div className="screen game-screen">
-      <div className="game-progress">Round {round.roundNumber} / {totalRounds}</div>
+      <div className="game-progress">
+        Round {round.roundNumber} / {totalRounds}
+      </div>
       <div className="minimap-panel">
         <MinimapGuesser
           minimapUrl={assetUrl(round.minimapUrl)}

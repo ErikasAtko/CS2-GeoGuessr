@@ -5,10 +5,10 @@ namespace CS2_GEO.Data.Repositories;
 
 public class GuestSessionRepository(GameDbContext db) : IGuestSessionRepository
 {
-    private readonly QueryRepository<GuestSession> sessions = new(db);
+    private readonly QueryRepository<GuestSession> _sessions = new(db);
 
     public Task<GuestSession?> GetByTokenAsync(string token) =>
-        sessions.FindAsync(s => s.Token == token, q => q.Include(s => s.Player));
+        _sessions.FindAsync(s => s.Token == token, q => q.Include(s => s.Player));
 
     public async Task<GuestSession> CreateAsync(string nickname, string token)
     {
@@ -19,8 +19,8 @@ public class GuestSessionRepository(GameDbContext db) : IGuestSessionRepository
             CreatedAt = DateTime.UtcNow,
         };
 
-        sessions.Add(session);
-        await sessions.SaveChangesAsync();
+        _sessions.Add(session);
+        await _sessions.SaveChangesAsync();
 
         return session;
     }

@@ -55,12 +55,7 @@ export default function LobbyScreen({
             if (joinCode.trim()) onJoinLobby(joinCode.trim().toUpperCase())
           }}
         >
-          <input
-            value={joinCode}
-            onChange={(e) => setJoinCode(e.target.value)}
-            placeholder="Join code"
-            maxLength={6}
-          />
+          <input value={joinCode} onChange={(e) => setJoinCode(e.target.value)} placeholder="Join code" maxLength={6} />
           <button type="submit">Join lobby</button>
         </form>
         {error && <p className="error-text">{error}</p>}
@@ -82,11 +77,7 @@ export default function LobbyScreen({
       <p>
         {lobby.members.length} / {lobby.maxPlayers} players · {lobby.roundCount} rounds
       </p>
-      {isHost ? (
-        <button onClick={onStartMatch}>Start match</button>
-      ) : (
-        <p>Waiting for the host to start the match...</p>
-      )}
+      {isHost ? <button onClick={onStartMatch}>Start match</button> : <p>Waiting for the host to start the match...</p>}
       {error && <p className="error-text">{error}</p>}
     </div>
   )

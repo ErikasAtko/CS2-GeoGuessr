@@ -2,13 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import type { HubConnection } from '@microsoft/signalr'
 import { createGuestSession, createLobby, joinLobby, startMatch, submitMatchGuess } from './api'
 import { createConnection, joinLobbyGroup } from './connection'
-import type {
-  GuestSessionDto,
-  LobbyDto,
-  PlayerStandingDto,
-  RoundCompletedDto,
-  StartMatchResultDto,
-} from './types'
+import type { GuestSessionDto, LobbyDto, PlayerStandingDto, RoundCompletedDto, StartMatchResultDto } from './types'
 import type { GuessPoint } from '../types'
 
 export type MultiplayerScreen = 'nickname' | 'lobby' | 'playing' | 'roundResult' | 'finished'
@@ -85,12 +79,16 @@ export function useMultiplayer() {
 
   const createLobbyAction = (mapCode: string | null, roundCount: number) => {
     if (!identity) return
-    createLobby(identity.token, mapCode, roundCount).then(setLobby).catch((e) => setError(String(e)))
+    createLobby(identity.token, mapCode, roundCount)
+      .then(setLobby)
+      .catch((e) => setError(String(e)))
   }
 
   const joinLobbyAction = (joinCode: string) => {
     if (!identity) return
-    joinLobby(identity.token, joinCode).then(setLobby).catch((e) => setError(String(e)))
+    joinLobby(identity.token, joinCode)
+      .then(setLobby)
+      .catch((e) => setError(String(e)))
   }
 
   const startMatchAction = () => {
