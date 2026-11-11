@@ -1,6 +1,6 @@
 import type { GameDto, GameSummaryDto, GuessResultDto, MapDto, RoundDto, RoundGuessDto } from './types'
 
-const BASE_URL = 'http://localhost:5080'
+export const BASE_URL = 'http://localhost:5080'
 
 export function assetUrl(path: string) {
   return `${BASE_URL}${path}`

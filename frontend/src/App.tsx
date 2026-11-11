@@ -1,11 +1,15 @@
+import { useState } from 'react'
 import './App.css'
 import { useGame } from './hooks/useGame'
 import StartScreen from './components/StartScreen'
 import GameScreen from './components/GameScreen'
 import ResultScreen from './components/ResultScreen'
 import SummaryScreen from './components/SummaryScreen'
+import MultiplayerApp from './multiplayer/MultiplayerApp'
 
-function App() {
+type Mode = 'single' | 'multiplayer'
+
+function SinglePlayerApp() {
   const game = useGame()
   const { screen, round, guess, result, summary } = game
 
@@ -28,6 +32,24 @@ function App() {
         />
       )}
       {screen === 'summary' && summary && <SummaryScreen summary={summary} onPlayAgain={game.backToStart} />}
+    </>
+  )
+}
+
+function App() {
+  const [mode, setMode] = useState<Mode>('single')
+
+  return (
+    <>
+      <div className="mode-toggle">
+        <button disabled={mode === 'single'} onClick={() => setMode('single')}>
+          Singleplayer
+        </button>
+        <button disabled={mode === 'multiplayer'} onClick={() => setMode('multiplayer')}>
+          Multiplayer
+        </button>
+      </div>
+      {mode === 'single' ? <SinglePlayerApp /> : <MultiplayerApp />}
     </>
   )
 }
