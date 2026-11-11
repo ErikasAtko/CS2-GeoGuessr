@@ -149,3 +149,31 @@ button:disabled {
   border-radius: 4px;
   display: block;
 }
+
+.mode-toggle {
+  display: flex;
+  justify-content: center;
+  gap: 8px;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+
+.lobby-screen input {
+  font: inherit;
+  padding: 10px 12px;
+  border-radius: 8px;
+  border: 1px solid var(--border);
+  background: var(--accent-bg);
+  color: var(--text-h);
+  margin-right: 8px;
+}
+
+.member-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.error-text {
+  color: #e74c3c;
+}
