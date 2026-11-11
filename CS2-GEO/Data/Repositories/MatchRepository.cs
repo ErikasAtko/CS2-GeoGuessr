@@ -5,10 +5,10 @@ namespace CS2_GEO.Data.Repositories;
 
 public class MatchRepository(GameDbContext db) : IMatchRepository
 {
-    private readonly QueryRepository<Match> matches = new(db);
+    private readonly QueryRepository<Match> _matches = new(db);
 
     public Task<Match?> GetByIdAsync(int id) =>
-        matches.FindAsync(
+        _matches.FindAsync(
             m => m.Id == id,
             q => q
                 .Include(m => m.Lobby)
@@ -33,8 +33,8 @@ public class MatchRepository(GameDbContext db) : IMatchRepository
 
         lobby.Status = LobbyStatus.InProgress;
 
-        matches.Add(match);
-        await matches.SaveChangesAsync();
+        _matches.Add(match);
+        await _matches.SaveChangesAsync();
 
         // Reload so Location/Map/Player navs are populated for DTO mapping.
         return (await GetByIdAsync(match.Id))!;

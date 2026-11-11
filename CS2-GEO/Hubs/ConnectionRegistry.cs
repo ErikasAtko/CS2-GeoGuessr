@@ -9,10 +9,10 @@ namespace CS2_GEO.Hubs;
 /// </summary>
 public class ConnectionRegistry
 {
-    private readonly ConcurrentDictionary<string, int> connectionToLobby = new();
+    private readonly ConcurrentDictionary<string, int> _connectionToLobby = new();
 
-    public void Add(string connectionId, int lobbyId) => connectionToLobby[connectionId] = lobbyId;
+    public void Add(string connectionId, int lobbyId) => _connectionToLobby[connectionId] = lobbyId;
 
     public int? Remove(string connectionId) =>
-        connectionToLobby.TryRemove(connectionId, out var lobbyId) ? lobbyId : null;
+        _connectionToLobby.TryRemove(connectionId, out var lobbyId) ? lobbyId : null;
 }

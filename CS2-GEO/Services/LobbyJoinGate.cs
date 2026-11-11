@@ -9,7 +9,7 @@ namespace CS2_GEO.Services;
 /// </summary>
 public class LobbyJoinGate
 {
-    private readonly ConcurrentDictionary<int, SemaphoreSlim> locks = new();
+    private readonly ConcurrentDictionary<int, SemaphoreSlim> _locks = new();
 
-    public SemaphoreSlim For(int lobbyId) => locks.GetOrAdd(lobbyId, _ => new SemaphoreSlim(1, 1));
+    public SemaphoreSlim For(int lobbyId) => _locks.GetOrAdd(lobbyId, _ => new SemaphoreSlim(1, 1));
 }
