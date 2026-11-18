@@ -6,7 +6,8 @@ public record MatchRoundDto(int RoundNumber, int LocationId, string ImageUrl, st
 
 public record StartMatchResultDto(int MatchId, int LobbyId, int TotalRounds, MatchRoundDto Round);
 
-public record SubmitGuessRequestDto(double X, double Y);
+/// <summary>A guess for one round. <paramref name="RoundNumber"/> is the round the client is showing, so a guess for a round that already closed is rejected instead of being scored against the next one.</summary>
+public record SubmitGuessRequestDto(int RoundNumber, double X, double Y);
 
 public record SubmitGuessAckDto(int Score);
 

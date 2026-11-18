@@ -47,9 +47,9 @@ builder.Services.AddScoped<IGuestSessionService, GuestSessionService>();
 builder.Services.AddScoped<ILobbyService, LobbyService>();
 builder.Services.AddScoped<IMatchService, MatchService>();
 
-// Join-serialization and live-connection tracking both have to outlive a single request's
+// Per-lobby locking and live-connection tracking both have to outlive a single request's
 // scoped services, so they're singletons.
-builder.Services.AddSingleton<LobbyJoinGate>();
+builder.Services.AddSingleton<LobbyGate>();
 builder.Services.AddSingleton<ConnectionRegistry>();
 
 var app = builder.Build();

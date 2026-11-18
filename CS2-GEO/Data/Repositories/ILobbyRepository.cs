@@ -8,6 +8,13 @@ public interface ILobbyRepository
     /// <summary>The lobby for a join code, with <see cref="Lobby.Members"/> and their players loaded, or <c>null</c> if unknown.</summary>
     Task<Lobby?> GetByJoinCodeAsync(string joinCode);
 
+    /// <summary>
+    /// Just the id for a join code, without loading or tracking the lobby. Callers use it to take the
+    /// lobby's lock before reading its state: once EF tracks an entity, querying it again inside the
+    /// lock returns the cached values instead of what another request just wrote.
+    /// </summary>
+    Task<int?> GetIdByJoinCodeAsync(string joinCode);
+
     /// <summary>Creates a lobby with the given player as host and already-joined member.</summary>
     Task<Lobby> CreateAsync(int hostPlayerId, string joinCode, string? mapCode, int roundCount);
 

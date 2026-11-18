@@ -17,7 +17,7 @@ namespace CS2_GEO.Migrations
         {
 #pragma warning disable 612, 618
             modelBuilder
-                .HasAnnotation("ProductVersion", "10.0.12")
+                .HasAnnotation("ProductVersion", "10.0.15")
                 .HasAnnotation("Relational:MaxIdentifierLength", 63);
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
@@ -296,6 +296,10 @@ namespace CS2_GEO.Migrations
 
                     NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
 
+                    b.Property<DateTime?>("CompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("completed_at");
+
                     b.Property<int>("LocationId")
                         .HasColumnType("integer")
                         .HasColumnName("location_id");
@@ -508,7 +512,7 @@ namespace CS2_GEO.Migrations
             modelBuilder.Entity("CS2_GEO.Data.Entities.PlayerGuess", b =>
                 {
                     b.HasOne("CS2_GEO.Data.Entities.MatchRound", "MatchRound")
-                        .WithMany()
+                        .WithMany("Guesses")
                         .HasForeignKey("MatchRoundId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired()
@@ -541,6 +545,11 @@ namespace CS2_GEO.Migrations
                     b.Navigation("Participants");
 
                     b.Navigation("Rounds");
+                });
+
+            modelBuilder.Entity("CS2_GEO.Data.Entities.MatchRound", b =>
+                {
+                    b.Navigation("Guesses");
                 });
 #pragma warning restore 612, 618
         }

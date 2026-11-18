@@ -35,9 +35,9 @@ export function startMatch(token: string, joinCode: string) {
   })
 }
 
-export function submitMatchGuess(token: string, matchId: number, x: number, y: number) {
+export function submitMatchGuess(token: string, matchId: number, roundNumber: number, x: number, y: number) {
   return request<SubmitGuessAckDto>(`/api/matches/${matchId}/guess`, token, {
     method: 'POST',
-    body: JSON.stringify({ x, y }),
+    body: JSON.stringify({ roundNumber, x, y }),
   })
 }

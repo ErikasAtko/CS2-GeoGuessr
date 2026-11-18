@@ -12,6 +12,9 @@ public class LobbyRepository(GameDbContext db) : ILobbyRepository
             l => l.JoinCode == joinCode,
             q => q.Include(l => l.Members).ThenInclude(m => m.Player));
 
+    public Task<int?> GetIdByJoinCodeAsync(string joinCode) =>
+        db.Lobbies.Where(l => l.JoinCode == joinCode).Select(l => (int?)l.Id).FirstOrDefaultAsync();
+
     public async Task<Lobby> CreateAsync(int hostPlayerId, string joinCode, string? mapCode, int roundCount)
     {
         var lobby = new Lobby
