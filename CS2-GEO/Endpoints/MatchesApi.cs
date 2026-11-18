@@ -20,7 +20,7 @@ public static class MatchesApi
             return result.Error switch
             {
                 StartMatchError.LobbyNotFound => Results.NotFound("Lobby not found"),
-                StartMatchError.NotHost => Results.Forbid(),
+                StartMatchError.NotHost => Forbidden("Only the host can start the match"),
                 StartMatchError.AlreadyStarted => Results.BadRequest("Match already started"),
                 StartMatchError.NoLocationsFound => Results.NotFound("No locations found for this map"),
                 _ => Results.Ok(result.Match),
@@ -35,15 +35,20 @@ public static class MatchesApi
             if (playerId is null)
                 return Results.Unauthorized();
 
-            var result = await matchService.SubmitGuessAsync(matchId, playerId.Value, request.X, request.Y);
+            var result = await matchService.SubmitGuessAsync(matchId, playerId.Value, request.RoundNumber, request.X, request.Y);
             return result.Error switch
             {
                 SubmitGuessError.MatchNotFound => Results.NotFound("Match not found"),
-                SubmitGuessError.NotAParticipant => Results.Forbid(),
+                SubmitGuessError.NotAParticipant => Forbidden("You are not playing in this match"),
                 SubmitGuessError.MatchFinished => Results.BadRequest("Match already finished"),
                 SubmitGuessError.AlreadyGuessed => Results.BadRequest("Already guessed this round"),
+                SubmitGuessError.RoundClosed => Results.Conflict("This round has already ended"),
                 _ => Results.Ok(result.Ack),
             };
         });
     }
+
+    // Not Results.Forbid(): that hands off to the authentication middleware, which this app doesn't
+    // register (guests are identified by a header token instead), so it throws and returns a 500.
+    private static IResult Forbidden(string message) => Results.Json(message, statusCode: StatusCodes.Status403Forbidden);
 }

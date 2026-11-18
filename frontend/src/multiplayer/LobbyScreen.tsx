@@ -5,6 +5,7 @@ interface Props {
   hasIdentity: boolean
   lobby: LobbyDto | null
   isHost: boolean
+  startingMatch: boolean
   error: string | null
   onIdentify: (nickname: string) => void
   onCreateLobby: (mapCode: string | null, roundCount: number) => void
@@ -16,6 +17,7 @@ export default function LobbyScreen({
   hasIdentity,
   lobby,
   isHost,
+  startingMatch,
   error,
   onIdentify,
   onCreateLobby,
@@ -77,7 +79,13 @@ export default function LobbyScreen({
       <p>
         {lobby.members.length} / {lobby.maxPlayers} players · {lobby.roundCount} rounds
       </p>
-      {isHost ? <button onClick={onStartMatch}>Start match</button> : <p>Waiting for the host to start the match...</p>}
+      {isHost ? (
+        <button onClick={onStartMatch} disabled={startingMatch}>
+          {startingMatch ? 'Starting...' : 'Start match'}
+        </button>
+      ) : (
+        <p>Waiting for the host to start the match...</p>
+      )}
       {error && <p className="error-text">{error}</p>}
     </div>
   )

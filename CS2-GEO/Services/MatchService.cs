@@ -12,13 +12,24 @@ public class MatchService(
     ILobbyRepository lobbies,
     ILocationRepository locations,
     IScoreCalculator calculator,
+    LobbyGate gate,
+    ConnectionRegistry connections,
     IHubContext<MultiplayerHub> hub) : IMatchService
 {
+    // Every method that reads lobby/match state and then acts on it takes the lobby's lock first and
+    // only then loads that state, so the read is fresh and no other request can change it mid-way.
+    // Hub broadcasts go out while still holding the lock, so clients receive them in the order the
+    // changes happened.
+
     public async Task<StartMatchResult> StartAsync(string joinCode, int requestingPlayerId)
     {
-        var lobby = await lobbies.GetByJoinCodeAsync(joinCode);
-        if (lobby is null)
+        var lobbyId = await lobbies.GetIdByJoinCodeAsync(joinCode);
+        if (lobbyId is null)
             return new StartMatchResult(null, StartMatchError.LobbyNotFound);
+
+        using var _ = await gate.AcquireAsync(lobbyId.Value);
+
+        var lobby = (await lobbies.GetByJoinCodeAsync(joinCode))!;
         if (lobby.HostPlayerId != requestingPlayerId)
             return new StartMatchResult(null, StartMatchError.NotHost);
         if (lobby.Status != LobbyStatus.Waiting)
@@ -36,11 +47,15 @@ public class MatchService(
         return new StartMatchResult(dto, null);
     }
 
-    public async Task<SubmitGuessResult> SubmitGuessAsync(int matchId, int playerId, double x, double y)
+    public async Task<SubmitGuessResult> SubmitGuessAsync(int matchId, int playerId, int roundNumber, double x, double y)
     {
-        var match = await matches.GetByIdAsync(matchId);
-        if (match is null)
+        var lobbyId = await matches.GetLobbyIdAsync(matchId);
+        if (lobbyId is null)
             return new SubmitGuessResult(null, SubmitGuessError.MatchNotFound);
+
+        using var _ = await gate.AcquireAsync(lobbyId.Value);
+
+        var match = (await matches.GetByIdAsync(matchId))!;
         if (match.Status != MatchStatus.InProgress)
             return new SubmitGuessResult(null, SubmitGuessError.MatchFinished);
 
@@ -48,13 +63,11 @@ public class MatchService(
         if (participant is null)
             return new SubmitGuessResult(null, SubmitGuessError.NotAParticipant);
 
-        // The current round is whichever hasn't collected a guess from every participant yet.
-        var currentRound = match.Rounds
-            .OrderBy(r => r.RoundNumber)
-            .FirstOrDefault(r => r.Guesses.Count < match.Participants.Count);
+        var currentRound = CurrentRound(match);
         if (currentRound is null)
             return new SubmitGuessResult(null, SubmitGuessError.MatchFinished);
-
+        if (currentRound.RoundNumber != roundNumber)
+            return new SubmitGuessResult(null, SubmitGuessError.RoundClosed);
         if (currentRound.Guesses.Any(g => g.PlayerId == playerId))
             return new SubmitGuessResult(null, SubmitGuessError.AlreadyGuessed);
 
@@ -73,18 +86,55 @@ public class MatchService(
         participant.TotalScore += result.Score;
         await matches.AddGuessAsync(guess);
 
-        // A fresh DB read, not the in-memory currentRound.Guesses collection: EF Core's automatic
-        // fixup of an already-loaded navigation after Add() isn't guaranteed to have happened yet,
-        // so checking the in-memory collection here made round completion miss broadcasts.
-        var roundGuesses = await matches.GetGuessesForRoundAsync(currentRound.Id);
-        if (roundGuesses.Count >= match.Participants.Count)
-            await CompleteRoundAsync(match, currentRound, roundGuesses);
+        await CompleteRoundIfDoneAsync(match, currentRound);
 
         return new SubmitGuessResult(new SubmitGuessAckDto(result.Score), null);
     }
 
+    public async Task HandlePlayerLeftAsync(int lobbyId)
+    {
+        using var _ = await gate.AcquireAsync(lobbyId);
+
+        var match = await matches.GetInProgressByLobbyIdAsync(lobbyId);
+        var currentRound = match is null ? null : CurrentRound(match);
+        if (match is null || currentRound is null)
+            return;
+
+        await CompleteRoundIfDoneAsync(match, currentRound);
+    }
+
+    /// <summary>The first round whose results haven't gone out yet, or <c>null</c> once every round has.</summary>
+    private static MatchRound? CurrentRound(Match match) =>
+        match.Rounds.OrderBy(r => r.RoundNumber).FirstOrDefault(r => r.CompletedAt is null);
+
+    /// <summary>
+    /// Closes the round once nobody still connected is left to guess. Players who disconnected don't
+    /// hold it open (they just score nothing for it), but a round with no guesses at all stays open,
+    /// so a lobby where everyone dropped doesn't skip through its remaining rounds.
+    /// </summary>
+    private async Task CompleteRoundIfDoneAsync(Match match, MatchRound round)
+    {
+        // A fresh DB read, not the in-memory round.Guesses collection: EF Core's automatic
+        // fixup of an already-loaded navigation after Add() isn't guaranteed to have happened yet,
+        // so checking the in-memory collection here made round completion miss broadcasts.
+        var guesses = await matches.GetGuessesForRoundAsync(round.Id);
+        if (guesses.Count == 0)
+            return;
+
+        var guessed = guesses.Select(g => g.PlayerId).ToHashSet();
+        var online = connections.OnlinePlayers(match.LobbyId);
+        var stillWaitingOnSomeone = match.Participants.Any(p => !guessed.Contains(p.PlayerId) && online.Contains(p.PlayerId));
+        if (stillWaitingOnSomeone)
+            return;
+
+        await CompleteRoundAsync(match, round, guesses);
+    }
+
     private async Task CompleteRoundAsync(Match match, MatchRound round, List<PlayerGuess> guesses)
     {
+        round.CompletedAt = DateTime.UtcNow;
+        await matches.SaveChangesAsync();
+
         var results = guesses
             .Select(g => new PlayerRoundResultDto(
                 g.PlayerId,
@@ -125,6 +175,9 @@ public class MatchService(
             .ToList();
 
         await hub.Clients.Group(MultiplayerHub.GroupName(match.LobbyId)).SendAsync("MatchFinished", standings);
+
+        // Nothing changes a finished lobby any more, so its lock can go.
+        gate.Forget(match.LobbyId);
     }
 
     private static StartMatchResultDto ToStartDto(Match match) => new(

@@ -17,8 +17,12 @@ interface Props {
   submitted: boolean
   roundResult: RoundCompletedDto | null
   playerId: number | null
+  error: string | null
+  /** True once the final standings have arrived, which unlocks leaving the last round's results. */
+  standingsReady: boolean
   onSubmit: (point: GuessPoint) => void
   onContinue: () => void
+  onShowStandings: () => void
 }
 
 export default function MultiplayerGameScreen({
@@ -27,8 +31,11 @@ export default function MultiplayerGameScreen({
   submitted,
   roundResult,
   playerId,
+  error,
+  standingsReady,
   onSubmit,
   onContinue,
+  onShowStandings,
 }: Props) {
   const [pending, setPending] = useState<GuessPoint | null>(null)
 
@@ -63,7 +70,14 @@ export default function MultiplayerGameScreen({
               ))}
           </tbody>
         </table>
-        {roundResult.nextRound ? <button onClick={onContinue}>Next round</button> : <p>Finishing match...</p>}
+        {roundResult.nextRound ? (
+          <button onClick={onContinue}>Next round</button>
+        ) : (
+          <button onClick={onShowStandings} disabled={!standingsReady}>
+            {standingsReady ? 'Final standings' : 'Finishing match...'}
+          </button>
+        )}
+        {error && <p className="error-text">{error}</p>}
       </div>
     )
   }
@@ -86,6 +100,7 @@ export default function MultiplayerGameScreen({
             Guess
           </button>
         )}
+        {error && <p className="error-text">{error}</p>}
       </div>
       <img className="screenshot" src={assetUrl(round.imageUrl)} alt="Guess the location" />
     </div>

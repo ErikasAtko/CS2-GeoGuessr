@@ -13,6 +13,7 @@ export default function MultiplayerApp() {
           hasIdentity={!!mp.identity}
           lobby={mp.lobby}
           isHost={mp.isHost}
+          startingMatch={mp.startingMatch}
           error={mp.error}
           onIdentify={mp.identify}
           onCreateLobby={mp.createLobbyAction}
@@ -28,8 +29,11 @@ export default function MultiplayerApp() {
           submitted={mp.submitted}
           roundResult={mp.screen === 'roundResult' ? mp.roundResult : null}
           playerId={mp.identity?.playerId ?? null}
+          error={mp.error}
+          standingsReady={!!mp.standings}
           onSubmit={mp.submitGuess}
           onContinue={mp.continueToNextRound}
+          onShowStandings={mp.showStandings}
         />
       )}
       {mp.screen === 'finished' && mp.standings && <MultiplayerSummaryScreen standings={mp.standings} />}

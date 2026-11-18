@@ -32,12 +32,16 @@ export function useMultiplayer() {
   const [roundResult, setRoundResult] = useState<RoundCompletedDto | null>(null)
   const [standings, setStandings] = useState<PlayerStandingDto[] | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [startingMatch, setStartingMatch] = useState(false)
 
   const connectionRef = useRef<HubConnection | null>(null)
 
   useEffect(() => {
-    if (!lobby) return
+    if (!lobby || !identity) return
 
+    // React StrictMode mounts, cleans up and mounts again in dev. Stopping the first connection
+    // aborts its in-flight start(), and that rejection must not show up as an error on screen.
+    let cancelled = false
     const connection = createConnection()
     connectionRef.current = connection
 
@@ -47,20 +51,28 @@ export function useMultiplayer() {
       setSubmitted(false)
       setRoundResult(null)
       setStandings(null)
+      setStartingMatch(false)
+      setError(null)
       setScreen('playing')
     })
     connection.on('RoundCompleted', (dto: RoundCompletedDto) => {
       setRoundResult(dto)
+      setError(null)
       setScreen('roundResult')
     })
+    // On the last round this arrives right after RoundCompleted. Stay on the round results so
+    // players can see where the last location was; they move on with showStandings().
     connection.on('MatchFinished', (dto: PlayerStandingDto[]) => {
       setStandings(dto)
-      setScreen('finished')
+      setScreen((current) => (current === 'roundResult' ? current : 'finished'))
     })
 
-    joinLobbyGroup(connection, lobby.id).catch((e) => setError(String(e)))
+    joinLobbyGroup(connection, lobby.id, identity.token).catch((e) => {
+      if (!cancelled) setError(String(e))
+    })
 
     return () => {
+      cancelled = true
       connection.stop()
     }
     // Only (re)connect when the lobby itself changes, not on every member-list update.
@@ -92,10 +104,16 @@ export function useMultiplayer() {
   }
 
   const startMatchAction = () => {
-    if (!identity || !lobby) return
-    // No local state update here: the MatchStarted broadcast drives every connection in the
-    // group, including this one, so the host transitions the same way everyone else does.
-    startMatch(identity.token, lobby.joinCode).catch((e) => setError(String(e)))
+    if (!identity || !lobby || startingMatch) return
+    // Disabled until MatchStarted arrives, so a double click can't send a second start.
+    // No other local state update here: the MatchStarted broadcast drives every connection in
+    // the group, including this one, so the host transitions the same way everyone else does.
+    setStartingMatch(true)
+    setError(null)
+    startMatch(identity.token, lobby.joinCode).catch((e) => {
+      setError(String(e))
+      setStartingMatch(false)
+    })
   }
 
   // Takes the point directly rather than reading it back from state, since the caller just
@@ -104,7 +122,8 @@ export function useMultiplayer() {
   const submitGuess = (point: GuessPoint) => {
     if (!identity || !match || submitted) return
     setSubmitted(true)
-    submitMatchGuess(identity.token, match.matchId, point.x, point.y).catch((e) => {
+    setError(null)
+    submitMatchGuess(identity.token, match.matchId, match.round.roundNumber, point.x, point.y).catch((e) => {
       setError(String(e))
       setSubmitted(false)
     })
@@ -115,7 +134,12 @@ export function useMultiplayer() {
     setMatch({ ...match, round: roundResult.nextRound })
     setSubmitted(false)
     setRoundResult(null)
+    setError(null)
     setScreen('playing')
+  }
+
+  const showStandings = () => {
+    if (standings) setScreen('finished')
   }
 
   const isHost = lobby?.members.find((m) => m.playerId === identity?.playerId)?.isHost ?? false
@@ -130,11 +154,13 @@ export function useMultiplayer() {
     standings,
     error,
     isHost,
+    startingMatch,
     identify,
     createLobbyAction,
     joinLobbyAction,
     startMatchAction,
     submitGuess,
     continueToNextRound,
+    showStandings,
   }
 }

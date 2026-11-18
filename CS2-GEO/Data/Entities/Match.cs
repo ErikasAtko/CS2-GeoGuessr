@@ -29,6 +29,12 @@ public class MatchRound
     public int LocationId { get; set; }
     public Location Location { get; set; } = null!;
 
+    /// <summary>
+    /// When the round's results went out. Stored rather than derived from the guess count because a round
+    /// can close without a guess from a player who disconnected, and it must not count as open after that.
+    /// </summary>
+    public DateTime? CompletedAt { get; set; }
+
     public List<PlayerGuess> Guesses { get; set; } = new();
 }
 
