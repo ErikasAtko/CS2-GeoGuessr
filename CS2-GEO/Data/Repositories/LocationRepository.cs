@@ -3,7 +3,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CS2_GEO.Data.Repositories;
 
-public class LocationRepository(GameDbContext db) : ILocationRepository
+public class LocationRepository(GameDbContext db, QueryRepository<Location> locations) : ILocationRepository
 {
     public Task<List<Location>> GetRandomAsync(string? mapCode, int count)
     {
@@ -20,13 +20,11 @@ public class LocationRepository(GameDbContext db) : ILocationRepository
     }
 
     public Task<Location?> GetByIdAsync(int id) =>
-        db.Locations
-            .Include(l => l.Map)
-            .FirstOrDefaultAsync(l => l.Id == id);
+        locations.FindAsync(l => l.Id == id, IncludeMap);
 
     public Task<Dictionary<int, Location>> GetByIdsAsync(IReadOnlyCollection<int> ids) =>
-        db.Locations
-            .Include(l => l.Map)
-            .Where(l => ids.Contains(l.Id))
-            .ToDictionaryAsync(l => l.Id);
+        locations.ToDictionaryAsync(l => ids.Contains(l.Id), l => l.Id, IncludeMap);
+
+    // ILocationRepository promises every returned location has its Map loaded.
+    private static IQueryable<Location> IncludeMap(IQueryable<Location> query) => query.Include(l => l.Map);
 }

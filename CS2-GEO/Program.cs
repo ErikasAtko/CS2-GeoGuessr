@@ -34,6 +34,9 @@ builder.Services.AddSingleton<IScoreCalculator, ExponentialScoreCalculator>();
 builder.Services.AddSingleton<IGameScorer, GameScorer>();
 
 // Repositories share the request's DbContext, so they are scoped like it.
+// QueryRepository<T> is registered as an open generic: one registration serves every entity type,
+// and the container closes it (QueryRepository<Lobby>, QueryRepository<Location>, ...) on demand.
+builder.Services.AddScoped(typeof(QueryRepository<>));
 builder.Services.AddScoped<IMapRepository, MapRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<IGuestSessionRepository, GuestSessionRepository>();
