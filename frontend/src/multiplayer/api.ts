@@ -6,8 +6,23 @@ async function request<T>(path: string, token: string | null, init?: RequestInit
   if (token) headers['X-Guest-Token'] = token
 
   const res = await fetch(`${BASE_URL}${path}`, { headers, ...init })
-  if (!res.ok) throw new Error((await res.text().catch(() => '')) || `${res.status} ${res.statusText}`)
+  if (!res.ok) throw new Error(await errorMessage(res))
   return res.json() as Promise<T>
+}
+
+async function errorMessage(res: Response): Promise<string> {
+  const text = await res.text().catch(() => '')
+  const detail = (parseJson(text) as { detail?: unknown } | null)?.detail
+  if (typeof detail === 'string' && detail) return detail
+  return text || `${res.status} ${res.statusText}`
+}
+
+function parseJson(text: string): unknown {
+  try {
+    return JSON.parse(text)
+  } catch {
+    return null
+  }
 }
 
 export function createGuestSession(nickname: string) {
