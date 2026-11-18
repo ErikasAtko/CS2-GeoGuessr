@@ -1,6 +1,7 @@
 using CS2_GEO.Data;
 using CS2_GEO.Data.Repositories;
 using CS2_GEO.Endpoints;
+using CS2_GEO.Exceptions;
 using CS2_GEO.Game;
 using CS2_GEO.Hubs;
 using CS2_GEO.Services;
@@ -26,6 +27,9 @@ builder.Services.AddCors(options =>
 });
 
 builder.Services.AddSignalR();
+
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GameExceptionHandler>();
 
 // Scoring is stateless, so one instance serves every request. A difficulty level would register different options.
 builder.Services.AddSingleton(new ScoringOptions());
@@ -59,6 +63,7 @@ var app = builder.Build();
 
 await app.InitializeDatabaseAsync();
 
+app.UseExceptionHandler();
 app.UseCors("Frontend");
 app.UseStaticFiles();
 
