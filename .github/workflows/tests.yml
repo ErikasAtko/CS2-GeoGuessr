@@ -1,0 +1,35 @@
+# Runs the backend tests on every pull request and publishes the coverage report.
+# There is no appsettings.Local.json here, so the integration tests start PostgreSQL in Docker
+# with Testcontainers (see tests/CS2-GEO.Tests/Integration/TestDatabase.cs); GitHub's Ubuntu
+# runners have Docker.
+name: Tests
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+jobs:
+  backend:
+    name: Backend (xUnit + coverage)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-dotnet@v5
+        with:
+          dotnet-version: 10.0.x
+      - run: dotnet tool restore
+      - name: Run tests
+        run: dotnet test --coverage --coverage-output-format cobertura --coverage-output coverage.cobertura.xml --results-directory TestResults
+      - name: Coverage report
+        run: >-
+          dotnet reportgenerator -reports:TestResults/coverage.cobertura.xml -targetdir:coverage-report
+          "-classfilters:-CS2_GEO.Migrations.*;-System.Runtime.CompilerServices*"
+          "-reporttypes:Html;MarkdownSummaryGithub"
+      - name: Show coverage in the run summary
+        run: cat coverage-report/SummaryGithub.md >> "$GITHUB_STEP_SUMMARY"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: coverage-report
+          path: coverage-report/
