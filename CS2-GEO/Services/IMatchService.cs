@@ -18,9 +18,6 @@ public enum SubmitGuessError
     NotAParticipant,
     MatchFinished,
     AlreadyGuessed,
-
-    /// <summary>The guess was for a round that already closed, e.g. it finished without this player while they were disconnected.</summary>
-    RoundClosed,
 }
 
 public record SubmitGuessResult(SubmitGuessAckDto? Ack, SubmitGuessError? Error);

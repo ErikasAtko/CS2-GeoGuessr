@@ -3,14 +3,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CS2_GEO.Data.Repositories;
 
-public class MatchRepository(GameDbContext db) : IMatchRepository
+public class MatchRepository(
+    GameDbContext db,
+    QueryRepository<Match> matches,
+    QueryRepository<PlayerGuess> guesses) : IMatchRepository
 {
-    private readonly QueryRepository<Match> _matches = new(db);
-
-    public Task<Match?> GetByIdAsync(int id) => _matches.FindAsync(m => m.Id == id, IncludeEverything);
+    public Task<Match?> GetByIdAsync(int id) => matches.FindAsync(m => m.Id == id, IncludeEverything);
 
     public Task<Match?> GetInProgressByLobbyIdAsync(int lobbyId) =>
-        _matches.FindAsync(m => m.LobbyId == lobbyId && m.Status == MatchStatus.InProgress, IncludeEverything);
+        matches.FindAsync(m => m.LobbyId == lobbyId && m.Status == MatchStatus.InProgress, IncludeEverything);
 
     public Task<int?> GetLobbyIdAsync(int matchId) =>
         db.Matches.Where(m => m.Id == matchId).Select(m => (int?)m.LobbyId).FirstOrDefaultAsync();
@@ -32,17 +33,19 @@ public class MatchRepository(GameDbContext db) : IMatchRepository
 
         lobby.Status = LobbyStatus.InProgress;
 
-        _matches.Add(match);
-        await _matches.SaveChangesAsync();
+        matches.Add(match);
+        await matches.SaveChangesAsync();
 
         // Reload so Location/Map/Player navs are populated for DTO mapping.
         return (await GetByIdAsync(match.Id))!;
     }
 
+    // Saving through the shared DbContext also persists whatever the caller changed on tracked
+    // entities (the participant's running score), in the same transaction as the guess.
     public Task AddGuessAsync(PlayerGuess guess)
     {
-        db.PlayerGuesses.Add(guess);
-        return db.SaveChangesAsync();
+        guesses.Add(guess);
+        return guesses.SaveChangesAsync();
     }
 
     public Task<List<PlayerGuess>> GetGuessesForRoundAsync(int matchRoundId) =>

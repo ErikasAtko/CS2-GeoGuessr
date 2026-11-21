@@ -1,6 +1,7 @@
 using CS2_GEO.Data;
 using CS2_GEO.Data.Repositories;
 using CS2_GEO.Endpoints;
+using CS2_GEO.Exceptions;
 using CS2_GEO.Game;
 using CS2_GEO.Hubs;
 using CS2_GEO.Services;
@@ -27,6 +28,9 @@ builder.Services.AddCors(options =>
 
 builder.Services.AddSignalR();
 
+builder.Services.AddProblemDetails();
+builder.Services.AddExceptionHandler<GameExceptionHandler>();
+
 // Scoring is stateless, so one instance serves every request. A difficulty level would register different options.
 builder.Services.AddSingleton(new ScoringOptions());
 builder.Services.AddSingleton<IScoreTierClassifier, ThresholdScoreTierClassifier>();
@@ -34,6 +38,9 @@ builder.Services.AddSingleton<IScoreCalculator, ExponentialScoreCalculator>();
 builder.Services.AddSingleton<IGameScorer, GameScorer>();
 
 // Repositories share the request's DbContext, so they are scoped like it.
+// QueryRepository<T> is registered as an open generic: one registration serves every entity type,
+// and the container closes it (QueryRepository<Lobby>, QueryRepository<Location>, ...) on demand.
+builder.Services.AddScoped(typeof(QueryRepository<>));
 builder.Services.AddScoped<IMapRepository, MapRepository>();
 builder.Services.AddScoped<ILocationRepository, LocationRepository>();
 builder.Services.AddScoped<IGuestSessionRepository, GuestSessionRepository>();
@@ -56,6 +63,7 @@ var app = builder.Build();
 
 await app.InitializeDatabaseAsync();
 
+app.UseExceptionHandler();
 app.UseCors("Frontend");
 app.UseStaticFiles();
 

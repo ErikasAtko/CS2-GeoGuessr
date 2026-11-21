@@ -1,6 +1,7 @@
 using CS2_GEO.Data.Entities;
 using CS2_GEO.Data.Repositories;
 using CS2_GEO.Dtos;
+using CS2_GEO.Exceptions;
 using CS2_GEO.Game;
 using CS2_GEO.Hubs;
 using Microsoft.AspNetCore.SignalR;
@@ -67,7 +68,7 @@ public class MatchService(
         if (currentRound is null)
             return new SubmitGuessResult(null, SubmitGuessError.MatchFinished);
         if (currentRound.RoundNumber != roundNumber)
-            return new SubmitGuessResult(null, SubmitGuessError.RoundClosed);
+            throw new RoundClosedException(roundNumber);
         if (currentRound.Guesses.Any(g => g.PlayerId == playerId))
             return new SubmitGuessResult(null, SubmitGuessError.AlreadyGuessed);
 

@@ -1,5 +1,4 @@
 using CS2_GEO.Dtos;
-using CS2_GEO.Exceptions;
 using CS2_GEO.Services;
 
 namespace CS2_GEO.Endpoints;
@@ -32,20 +31,13 @@ public static class LobbiesApi
             if (playerId is null)
                 return Results.Unauthorized();
 
-            try
+            var result = await lobbyService.JoinAsync(joinCode, playerId.Value);
+            return result.Error switch
             {
-                var result = await lobbyService.JoinAsync(joinCode, playerId.Value);
-                return result.Error switch
-                {
-                    JoinLobbyError.NotFound => Results.NotFound("Lobby not found"),
-                    JoinLobbyError.AlreadyStarted => Results.BadRequest("Lobby already started"),
-                    _ => Results.Ok(result.Lobby),
-                };
-            }
-            catch (LobbyFullException ex)
-            {
-                return Results.Conflict(ex.Message);
-            }
+                JoinLobbyError.NotFound => Results.NotFound("Lobby not found"),
+                JoinLobbyError.AlreadyStarted => Results.BadRequest("Lobby already started"),
+                _ => Results.Ok(result.Lobby),
+            };
         });
     }
 }

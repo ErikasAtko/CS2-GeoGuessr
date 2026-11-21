@@ -3,12 +3,10 @@ using Microsoft.EntityFrameworkCore;
 
 namespace CS2_GEO.Data.Repositories;
 
-public class LobbyRepository(GameDbContext db) : ILobbyRepository
+public class LobbyRepository(GameDbContext db, QueryRepository<Lobby> lobbies) : ILobbyRepository
 {
-    private readonly QueryRepository<Lobby> _lobbies = new(db);
-
     public Task<Lobby?> GetByJoinCodeAsync(string joinCode) =>
-        _lobbies.FindAsync(
+        lobbies.FindAsync(
             l => l.JoinCode == joinCode,
             q => q.Include(l => l.Members).ThenInclude(m => m.Player));
 
@@ -27,8 +25,8 @@ public class LobbyRepository(GameDbContext db) : ILobbyRepository
         };
         lobby.Members.Add(new LobbyMembership { PlayerId = hostPlayerId, IsReady = true, JoinedAt = DateTime.UtcNow });
 
-        _lobbies.Add(lobby);
-        await _lobbies.SaveChangesAsync();
+        lobbies.Add(lobby);
+        await lobbies.SaveChangesAsync();
 
         // Reload so Members[].Player is populated for DTO mapping.
         return (await GetByJoinCodeAsync(joinCode))!;

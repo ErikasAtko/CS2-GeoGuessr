@@ -42,7 +42,6 @@ public static class MatchesApi
                 SubmitGuessError.NotAParticipant => Forbidden("You are not playing in this match"),
                 SubmitGuessError.MatchFinished => Results.BadRequest("Match already finished"),
                 SubmitGuessError.AlreadyGuessed => Results.BadRequest("Already guessed this round"),
-                SubmitGuessError.RoundClosed => Results.Conflict("This round has already ended"),
                 _ => Results.Ok(result.Ack),
             };
         });
