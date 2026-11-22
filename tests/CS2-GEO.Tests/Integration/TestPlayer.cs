@@ -49,6 +49,8 @@ public sealed class TestPlayer : IAsyncDisposable
         return (await response.Content.ReadFromJsonAsync<LobbyDto>(Cancellation))!;
     }
 
+    public Task<HttpResponseMessage> GetCurrentAsync() => Http.GetAsync("/api/lobbies/current", Cancellation);
+
     public Task<HttpResponseMessage> JoinAsync(string joinCode) =>
         Http.PostAsync($"/api/lobbies/{joinCode}/join", content: null, Cancellation);
 

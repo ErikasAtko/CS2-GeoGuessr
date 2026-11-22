@@ -28,6 +28,9 @@ public interface IMatchService
 
     Task<SubmitGuessResult> SubmitGuessAsync(int matchId, int playerId, int roundNumber, double x, double y);
 
+    /// <summary>The lobby's in-progress match and its current (not yet completed) round, or <c>null</c> if no match is running there. Used to resume a client that only has a guest token.</summary>
+    Task<StartMatchResultDto?> GetCurrentStateAsync(int lobbyId);
+
     /// <summary>
     /// Called when a player's last live connection to a lobby drops. Closes the current round if
     /// everyone still online has guessed, so one closed tab can't stall the match for everyone.

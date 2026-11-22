@@ -92,6 +92,18 @@ public class MatchService(
         return new SubmitGuessResult(new SubmitGuessAckDto(result.Score), null);
     }
 
+    // Read-only, so unlike the methods above this doesn't take the lobby's lock: a resuming client
+    // briefly seeing a round that's about to close is fine, it'll be corrected by the next broadcast.
+    public async Task<StartMatchResultDto?> GetCurrentStateAsync(int lobbyId)
+    {
+        var match = await matches.GetInProgressByLobbyIdAsync(lobbyId);
+        if (match is null)
+            return null;
+
+        var currentRound = CurrentRound(match);
+        return currentRound is null ? null : ToStartDto(match, currentRound);
+    }
+
     public async Task HandlePlayerLeftAsync(int lobbyId)
     {
         using var _ = await gate.AcquireAsync(lobbyId);
@@ -181,11 +193,14 @@ public class MatchService(
         gate.Forget(match.LobbyId);
     }
 
-    private static StartMatchResultDto ToStartDto(Match match) => new(
+    private static StartMatchResultDto ToStartDto(Match match) =>
+        ToStartDto(match, match.Rounds.OrderBy(r => r.RoundNumber).First());
+
+    private static StartMatchResultDto ToStartDto(Match match, MatchRound round) => new(
         match.Id,
         match.LobbyId,
         match.Rounds.Count,
-        ToRoundDto(match.Rounds.OrderBy(r => r.RoundNumber).First()));
+        ToRoundDto(round));
 
     private static MatchRoundDto ToRoundDto(MatchRound round) =>
         new(round.RoundNumber, round.LocationId, round.Location.ImageUrl, round.Location.Map.MinimapUrl);

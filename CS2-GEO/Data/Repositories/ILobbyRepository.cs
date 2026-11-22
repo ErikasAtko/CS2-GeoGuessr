@@ -15,6 +15,12 @@ public interface ILobbyRepository
     /// </summary>
     Task<int?> GetIdByJoinCodeAsync(string joinCode);
 
+    /// <summary>
+    /// The player's most recent lobby that hasn't finished (Waiting or InProgress), with
+    /// <see cref="Lobby.Members"/> and their players loaded, or <c>null</c> if they're not in one.
+    /// </summary>
+    Task<Lobby?> GetActiveForPlayerAsync(int playerId);
+
     /// <summary>Creates a lobby with the given player as host and already-joined member.</summary>
     Task<Lobby> CreateAsync(int hostPlayerId, string joinCode, string? mapCode, int roundCount);
 

@@ -16,3 +16,6 @@ public record LobbyDto(
     int RoundCount,
     int MaxPlayers,
     List<LobbyMemberDto> Members);
+
+/// <summary>The caller's active lobby and, if a match is already running there, its current round - what a client needs to resume after a refresh or reconnect, since all it has is a guest token.</summary>
+public record CurrentSessionDto(LobbyDto Lobby, StartMatchResultDto? Match);

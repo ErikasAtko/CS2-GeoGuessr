@@ -23,4 +23,7 @@ public interface ILobbyService
 
     /// <summary>Throws <see cref="Exceptions.LobbyFullException"/> if the lobby is already at capacity.</summary>
     Task<JoinLobbyResult> JoinAsync(string joinCode, int playerId);
+
+    /// <summary>The caller's active (not yet finished) lobby, or <c>null</c> if they're not in one.</summary>
+    Task<LobbyDto?> GetCurrentAsync(int playerId);
 }

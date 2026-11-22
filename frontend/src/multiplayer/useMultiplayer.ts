@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import type { HubConnection } from '@microsoft/signalr'
-import { createGuestSession, createLobby, joinLobby, startMatch, submitMatchGuess } from './api'
+import { createGuestSession, createLobby, getCurrentSession, joinLobby, startMatch, submitMatchGuess } from './api'
 import { createConnection, joinLobbyGroup } from './connection'
 import type { GuestSessionDto, LobbyDto, PlayerStandingDto, RoundCompletedDto, StartMatchResultDto } from './types'
 import type { GuessPoint } from '../types'
@@ -35,6 +35,27 @@ export function useMultiplayer() {
   const [startingMatch, setStartingMatch] = useState(false)
 
   const connectionRef = useRef<HubConnection | null>(null)
+
+  // On a fresh page load the stored identity's token is all there is - the lobby/match it was in
+  // is gone until this resolves it, which is also what lets the hub-connection effect below run.
+  useEffect(() => {
+    if (!identity) return
+    let cancelled = false
+    getCurrentSession(identity.token)
+      .then((session) => {
+        if (cancelled || !session) return
+        setLobby(session.lobby)
+        if (session.match) {
+          setMatch(session.match)
+          setScreen('playing')
+        }
+      })
+      .catch((e) => setError(String(e)))
+    return () => {
+      cancelled = true
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [identity?.token])
 
   useEffect(() => {
     if (!lobby || !identity) return
