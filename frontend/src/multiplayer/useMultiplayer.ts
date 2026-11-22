@@ -16,6 +16,12 @@ function loadStoredIdentity(): GuestSessionDto | null {
   return raw ? (JSON.parse(raw) as GuestSessionDto) : null
 }
 
+// Whether a refresh should land back in the multiplayer tab at all: App.tsx's mode toggle has no
+// memory of its own, so it asks this instead of reimplementing the storage key.
+export function hasStoredMultiplayerIdentity(): boolean {
+  return loadStoredIdentity() !== null
+}
+
 interface CurrentMatch {
   matchId: number
   lobbyId: number

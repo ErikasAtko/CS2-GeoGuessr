@@ -6,6 +6,7 @@ import GameScreen from './components/GameScreen'
 import ResultScreen from './components/ResultScreen'
 import SummaryScreen from './components/SummaryScreen'
 import MultiplayerApp from './multiplayer/MultiplayerApp'
+import { hasStoredMultiplayerIdentity } from './multiplayer/useMultiplayer'
 
 type Mode = 'single' | 'multiplayer'
 
@@ -37,7 +38,9 @@ function SinglePlayerApp() {
 }
 
 function App() {
-  const [mode, setMode] = useState<Mode>('single')
+  // A refresh must not drop a player out of a multiplayer match back onto the singleplayer tab:
+  // if they have a guest identity stored, that's where they were, so that's where to reopen.
+  const [mode, setMode] = useState<Mode>(() => (hasStoredMultiplayerIdentity() ? 'multiplayer' : 'single'))
 
   return (
     <>
