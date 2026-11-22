@@ -18,6 +18,42 @@ public class LobbiesApiTests(Cs2GeoApiFactory factory) : IAsyncDisposable
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    // No password backs this yet: typing a taken name reclaims that player, token and all. Uses the
+    // raw client, not TestPlayer.CreateAsync, which uniquifies nicknames so unrelated tests sharing
+    // the one database (Cs2GeoApiFactory) don't reconnect into each other's players - here the
+    // collision is exactly what's under test, so both calls need the identical literal nickname.
+    [Fact]
+    public async Task CreateGuestSession_SameNicknameAgain_ReconnectsToTheSamePlayer()
+    {
+        var nickname = $"Bob-{Guid.NewGuid():N}"[..32];
+        var first = await CreateSessionAsync(nickname);
+
+        var second = await CreateSessionAsync(nickname);
+
+        Assert.Equal(first.PlayerId, second.PlayerId);
+        Assert.NotEqual(first.Token, second.Token);
+    }
+
+    // Matching is case-insensitive, and the response always carries the name as it was first
+    // stored - so a client that typed "bob" sees "Bob" and can't silently fork a second player.
+    [Fact]
+    public async Task CreateGuestSession_SameNicknameDifferentCase_ReconnectsToTheSamePlayer()
+    {
+        var nickname = $"Bob-{Guid.NewGuid():N}"[..32];
+        var first = await CreateSessionAsync(nickname);
+
+        var second = await CreateSessionAsync(nickname.ToUpperInvariant());
+
+        Assert.Equal(first.PlayerId, second.PlayerId);
+        Assert.Equal(nickname, second.Nickname);
+    }
+
+    private async Task<GuestSessionDto> CreateSessionAsync(string nickname)
+    {
+        var response = await factory.CreateClient().PostAsJsonAsync("/api/guest-sessions", new { nickname }, Cancellation);
+        return (await response.Content.ReadFromJsonAsync<GuestSessionDto>(Cancellation))!;
+    }
+
     // The token from the guest session is what identifies the player on every later request.
     [Fact]
     public async Task CreateLobby_WithGuestToken_CallerBecomesTheHost()
