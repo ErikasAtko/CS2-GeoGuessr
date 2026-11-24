@@ -9,10 +9,10 @@ public class MatchRepository(
     QueryRepository<PlayerGuess> guesses) : IMatchRepository
 {
     public Task<Match?> GetByIdAsync(int id, CancellationToken cancellationToken) =>
-        matches.FindAsync(m => m.Id == id, cancellationToken, IncludeEverything);
+        matches.FindAsync(m => m.Id == id, IncludeEverything, cancellationToken);
 
     public Task<Match?> GetInProgressByLobbyIdAsync(int lobbyId, CancellationToken cancellationToken) =>
-        matches.FindAsync(m => m.LobbyId == lobbyId && m.Status == MatchStatus.InProgress, cancellationToken, IncludeEverything);
+        matches.FindAsync(m => m.LobbyId == lobbyId && m.Status == MatchStatus.InProgress, IncludeEverything, cancellationToken);
 
     public Task<int?> GetLobbyIdAsync(int matchId, CancellationToken cancellationToken) =>
         db.Matches.Where(m => m.Id == matchId).Select(m => (int?)m.LobbyId).FirstOrDefaultAsync(cancellationToken);

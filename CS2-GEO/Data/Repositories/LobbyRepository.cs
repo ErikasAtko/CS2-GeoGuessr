@@ -8,8 +8,8 @@ public class LobbyRepository(GameDbContext db, QueryRepository<Lobby> lobbies) :
     public Task<Lobby?> GetByJoinCodeAsync(string joinCode, CancellationToken cancellationToken) =>
         lobbies.FindAsync(
             l => l.JoinCode == joinCode,
-            cancellationToken,
-            q => q.Include(l => l.Members).ThenInclude(m => m.Player));
+            q => q.Include(l => l.Members).ThenInclude(m => m.Player),
+            cancellationToken);
 
     public Task<int?> GetIdByJoinCodeAsync(string joinCode, CancellationToken cancellationToken) =>
         db.Lobbies.Where(l => l.JoinCode == joinCode).Select(l => (int?)l.Id).FirstOrDefaultAsync(cancellationToken);

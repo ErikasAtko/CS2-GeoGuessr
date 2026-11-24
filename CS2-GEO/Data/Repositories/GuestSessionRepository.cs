@@ -6,7 +6,7 @@ namespace CS2_GEO.Data.Repositories;
 public class GuestSessionRepository(QueryRepository<GuestSession> sessions, QueryRepository<Player> players) : IGuestSessionRepository
 {
     public Task<GuestSession?> GetByTokenAsync(string token, CancellationToken cancellationToken) =>
-        sessions.FindAsync(s => s.Token == token, cancellationToken, q => q.Include(s => s.Player));
+        sessions.FindAsync(s => s.Token == token, q => q.Include(s => s.Player), cancellationToken);
 
     // No password behind this yet - typing a taken name reclaims that player outright, active game
     // included. Deliberate for now (a stepping stone to a real account system); case-insensitive so

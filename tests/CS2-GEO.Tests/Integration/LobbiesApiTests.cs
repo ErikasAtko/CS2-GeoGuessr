@@ -1,6 +1,8 @@
 using System.Net;
 using System.Net.Http.Json;
 using CS2_GEO.Dtos;
+using CS2_GEO.Services;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace CS2_GEO.Tests.Integration;
 
@@ -215,6 +217,43 @@ public class LobbiesApiTests(Cs2GeoApiFactory factory) : IAsyncDisposable
         var response = await alice.GetCurrentAsync();
 
         Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    // A player who closes the tab while their join is still waiting for the lobby's lock must not
+    // be added once the lock frees up: the request's token reaches LobbyGate, so the wait itself is
+    // cancelled. (ASP.NET answers such a request with 499 and only a Debug log, not a 500 error.)
+    [Fact]
+    public async Task Join_CancelledWhileWaitingForTheLobby_DoesNotJoin()
+    {
+        var host = await PlayerAsync("Host");
+        var quitter = await PlayerAsync("Quitter");
+        var lobby = await host.CreateLobbyAsync(rounds: 1);
+        var gate = factory.Services.GetRequiredService<LobbyGate>();
+        var busy = await gate.AcquireAsync(lobby.Id, Cancellation); // another request is busy with this lobby
+        using var closeTab = CancellationTokenSource.CreateLinkedTokenSource(Cancellation);
+        try
+        {
+            var join = quitter.Http.PostAsync($"/api/lobbies/{lobby.JoinCode}/join", content: null, closeTab.Token);
+            // Long enough for the request to reach the lock. A slower server only makes the test weaker
+            // (cancelled earlier, still not joined), never fail by accident.
+            await Task.Delay(TimeSpan.FromMilliseconds(300), Cancellation);
+            await closeTab.CancelAsync();
+
+            // If LobbyGate ignored the token, the request would keep waiting for the lock we hold and
+            // this would time out instead of seeing the cancellation.
+            await Assert.ThrowsAnyAsync<OperationCanceledException>(() => join.WaitAsync(TimeSpan.FromSeconds(5), Cancellation));
+        }
+        finally
+        {
+            busy.Dispose(); // even on failure, or a request stuck on the lock would hang the test run
+        }
+
+        // Take the lock once more: a join that was still queued behind it (if the token had been
+        // ignored) has now run, so the check below can't pass just by being early.
+        (await gate.AcquireAsync(lobby.Id, Cancellation)).Dispose();
+        var current = await quitter.GetCurrentAsync();
+
+        Assert.Equal(HttpStatusCode.NotFound, current.StatusCode);
     }
 
     private async Task<TestPlayer> PlayerAsync(string nickname)

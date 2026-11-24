@@ -10,25 +10,26 @@ namespace CS2_GEO.Data;
 /// </summary>
 public class QueryRepository<TEntity>(GameDbContext db) where TEntity : class
 {
+    // The CancellationToken is always the last parameter (the .NET convention), so the optional
+    // "include" is an overload rather than a default parameter that would have to come after it.
+
+    public Task<TEntity?> FindAsync(Expression<Func<TEntity, bool>> predicate, CancellationToken cancellationToken) =>
+        db.Set<TEntity>().FirstOrDefaultAsync(predicate, cancellationToken);
+
+    /// <summary>Like <see cref="FindAsync(Expression{Func{TEntity, bool}}, CancellationToken)"/>, with related data loaded by <paramref name="include"/>.</summary>
     public Task<TEntity?> FindAsync(
         Expression<Func<TEntity, bool>> predicate,
-        CancellationToken cancellationToken,
-        Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null)
-    {
-        var query = include is null ? db.Set<TEntity>() : include(db.Set<TEntity>());
-        return query.FirstOrDefaultAsync(predicate, cancellationToken);
-    }
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> include,
+        CancellationToken cancellationToken) =>
+        include(db.Set<TEntity>()).FirstOrDefaultAsync(predicate, cancellationToken);
 
-    /// <summary>Entities matching <paramref name="predicate"/>, keyed by whatever key the caller selects.</summary>
+    /// <summary>Entities matching <paramref name="predicate"/>, with related data loaded by <paramref name="include"/>, keyed by whatever key the caller selects.</summary>
     public Task<Dictionary<TKey, TEntity>> ToDictionaryAsync<TKey>(
         Expression<Func<TEntity, bool>> predicate,
         Func<TEntity, TKey> keySelector,
-        CancellationToken cancellationToken,
-        Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null) where TKey : notnull
-    {
-        var query = include is null ? db.Set<TEntity>() : include(db.Set<TEntity>());
-        return query.Where(predicate).ToDictionaryAsync(keySelector, cancellationToken);
-    }
+        Func<IQueryable<TEntity>, IQueryable<TEntity>> include,
+        CancellationToken cancellationToken) where TKey : notnull =>
+        include(db.Set<TEntity>()).Where(predicate).ToDictionaryAsync(keySelector, cancellationToken);
 
     public void Add(TEntity entity) => db.Set<TEntity>().Add(entity);
 
