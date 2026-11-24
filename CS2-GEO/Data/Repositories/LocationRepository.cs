@@ -20,10 +20,10 @@ public class LocationRepository(GameDbContext db, QueryRepository<Location> loca
     }
 
     public Task<Location?> GetByIdAsync(int id, CancellationToken cancellationToken) =>
-        locations.FindAsync(l => l.Id == id, cancellationToken, IncludeMap);
+        locations.FindAsync(l => l.Id == id, IncludeMap, cancellationToken);
 
     public Task<Dictionary<int, Location>> GetByIdsAsync(IReadOnlyCollection<int> ids, CancellationToken cancellationToken) =>
-        locations.ToDictionaryAsync(l => ids.Contains(l.Id), l => l.Id, cancellationToken, IncludeMap);
+        locations.ToDictionaryAsync(l => ids.Contains(l.Id), l => l.Id, IncludeMap, cancellationToken);
 
     // ILocationRepository promises every returned location has its Map loaded.
     private static IQueryable<Location> IncludeMap(IQueryable<Location> query) => query.Include(l => l.Map);

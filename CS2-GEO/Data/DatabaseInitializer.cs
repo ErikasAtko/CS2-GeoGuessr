@@ -11,12 +11,12 @@ public static class DatabaseInitializer
         await using var scope = app.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
 
-        // No request exists yet, so the only reason to stop is the app shutting down mid-startup.
-        var stopping = app.Lifetime.ApplicationStopping;
-
-        await db.Database.MigrateAsync(stopping);
+        // Not cancellable, on purpose: this runs before app.RunAsync(), and the host only starts
+        // listening for Ctrl+C (ApplicationStopping) once it runs, so no token here would ever fire.
+        // Ctrl+C during startup simply ends the process.
+        await db.Database.MigrateAsync(CancellationToken.None);
 
         var seedPath = Path.Combine(AppContext.BaseDirectory, "Data", "Seed", "seed.json");
-        await DatabaseSeeder.SeedAsync(db, seedPath, stopping);
+        await DatabaseSeeder.SeedAsync(db, seedPath, CancellationToken.None);
     }
 }
