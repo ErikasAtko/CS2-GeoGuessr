@@ -29,6 +29,7 @@ export default function MultiplayerApp() {
           submitted={mp.submitted}
           roundResult={mp.screen === 'roundResult' ? mp.roundResult : null}
           playerId={mp.identity?.playerId ?? null}
+          members={mp.lobby?.members ?? []}
           error={mp.error}
           standingsReady={!!mp.standings}
           autoAdvanceSeconds={mp.autoAdvanceSeconds}

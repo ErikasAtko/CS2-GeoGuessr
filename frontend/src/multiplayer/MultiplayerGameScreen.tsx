@@ -2,7 +2,17 @@ import { useState } from 'react'
 import { assetUrl } from '../api'
 import type { GuessPoint } from '../types'
 import MinimapGuesser from '../components/MinimapGuesser'
-import type { RoundCompletedDto } from './types'
+import type { LobbyMemberDto, RoundCompletedDto } from './types'
+
+const OWN_COLOR = '#E8B04B'
+const OTHER_COLORS = ['#7FB3FF', '#7BD389', '#F28C8C']
+
+function playerColor(playerId: number, ownPlayerId: number | null, members: LobbyMemberDto[]): string {
+  if (playerId === ownPlayerId) return OWN_COLOR
+  const others = members.filter((m) => m.playerId !== ownPlayerId)
+  const index = others.findIndex((m) => m.playerId === playerId)
+  return OTHER_COLORS[(index === -1 ? others.length : index) % OTHER_COLORS.length]
+}
 
 interface MatchRound {
   roundNumber: number
@@ -17,6 +27,7 @@ interface Props {
   submitted: boolean
   roundResult: RoundCompletedDto | null
   playerId: number | null
+  members: LobbyMemberDto[]
   error: string | null
   /** True once the final standings have arrived, which unlocks leaving the last round's results. */
   standingsReady: boolean
@@ -31,6 +42,7 @@ export default function MultiplayerGameScreen({
   submitted,
   roundResult,
   playerId,
+  members,
   error,
   standingsReady,
   autoAdvanceSeconds,
@@ -40,14 +52,19 @@ export default function MultiplayerGameScreen({
   const [pending, setPending] = useState<GuessPoint | null>(null)
 
   if (roundResult) {
-    const mine = roundResult.results.find((r) => r.playerId === playerId)
+    const colorOf = (id: number) => playerColor(id, playerId, members)
     return (
       <div className="screen result-screen">
         <h2>Round {roundResult.roundNumber} results</h2>
         <MinimapGuesser
           minimapUrl={assetUrl(round.minimapUrl)}
-          guess={mine ? { x: mine.x, y: mine.y } : undefined}
           actual={{ x: roundResult.actualX, y: roundResult.actualY }}
+          extraGuesses={roundResult.results.map((r) => ({
+            x: r.x,
+            y: r.y,
+            color: colorOf(r.playerId),
+            label: r.nickname,
+          }))}
         />
         <table className="summary-table">
           <thead>
@@ -63,7 +80,19 @@ export default function MultiplayerGameScreen({
               .sort((a, b) => b.score - a.score)
               .map((r) => (
                 <tr key={r.playerId}>
-                  <td>{r.nickname}</td>
+                  <td>
+                    <span
+                      style={{
+                        display: 'inline-block',
+                        width: 10,
+                        height: 10,
+                        borderRadius: '50%',
+                        marginRight: 6,
+                        background: colorOf(r.playerId),
+                      }}
+                    />
+                    {r.nickname}
+                  </td>
                   <td>{Math.round(r.distanceUnits)} units</td>
                   <td>{r.score}</td>
                 </tr>
