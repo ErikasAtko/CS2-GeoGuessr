@@ -28,20 +28,20 @@ Requirement coverage still needed:
 
 Features:
 
-- [ ] Multiplayer support
-- [ ] Create a lobby and play together with friends
+- [x] Multiplayer support
+- [x] Create a lobby and play together with friends
 
 Requirement coverage still needed:
 
-- [ ] A relational database with Entity Framework storing all data (players, rounds, lobbies), instead of in-memory state
-- [ ] A generic type with a generic method, demonstrating removed duplication (e.g. a generic `Repository<T>` used for `Round` and `Lobby`)
-- [ ] At least one custom exception type, thrown and meaningfully handled (e.g. `LobbyFullException` when joining a full lobby)
-- [ ] `async`/`await` for all I/O - no synchronous I/O
-- [ ] A shared-memory scenario identified and handled with concurrent collections or proper synchronization (e.g. tracking active players in a lobby)
-- [ ] Dependency Injection used everywhere reasonable - no dependencies created manually with `new`
-- [ ] Unit and integration test coverage of at least 50%
-- [ ] Same PR review requirements as Alpha
-- [ ] Uniform coding style across the project
+- [x] A relational database with Entity Framework storing all data (players, rounds, lobbies), instead of in-memory state
+- [x] A generic type with a generic method, demonstrating removed duplication (e.g. a generic `Repository<T>` used for `Round` and `Lobby`)
+- [x] At least one custom exception type, thrown and meaningfully handled (e.g. `LobbyFullException` when joining a full lobby)
+- [x] `async`/`await` for all I/O - no synchronous I/O
+- [x] A shared-memory scenario identified and handled with concurrent collections or proper synchronization (e.g. tracking active players in a lobby)
+- [x] Dependency Injection used everywhere reasonable - no dependencies created manually with `new`
+- [x] Unit and integration test coverage of at least 50%
+- [x] Same PR review requirements as Alpha
+- [x] Uniform coding style across the project
 
 ## Final - matches Lab Assignment #3 (deadline: week 15, 2.0 points)
 
