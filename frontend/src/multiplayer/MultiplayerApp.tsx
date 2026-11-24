@@ -33,7 +33,6 @@ export default function MultiplayerApp() {
           standingsReady={!!mp.standings}
           autoAdvanceSeconds={mp.autoAdvanceSeconds}
           onSubmit={mp.submitGuess}
-          onContinue={mp.continueToNextRound}
           onShowStandings={mp.showStandings}
         />
       )}

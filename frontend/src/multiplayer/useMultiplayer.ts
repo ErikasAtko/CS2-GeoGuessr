@@ -158,15 +158,6 @@ export function useMultiplayer() {
     })
   }
 
-  const continueToNextRound = () => {
-    if (!match || !roundResult?.nextRound) return
-    setMatch({ ...match, round: roundResult.nextRound })
-    setSubmitted(false)
-    setRoundResult(null)
-    setError(null)
-    setScreen('playing')
-  }
-
   useEffect(() => {
     if (screen !== 'roundResult' || !roundResult?.nextRound) return
     const nextRound = roundResult.nextRound
@@ -214,7 +205,6 @@ export function useMultiplayer() {
     joinLobbyAction,
     startMatchAction,
     submitGuess,
-    continueToNextRound,
     showStandings,
   }
 }

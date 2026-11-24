@@ -22,7 +22,6 @@ interface Props {
   standingsReady: boolean
   autoAdvanceSeconds: number | null
   onSubmit: (point: GuessPoint) => void
-  onContinue: () => void
   onShowStandings: () => void
 }
 
@@ -36,7 +35,6 @@ export default function MultiplayerGameScreen({
   standingsReady,
   autoAdvanceSeconds,
   onSubmit,
-  onContinue,
   onShowStandings,
 }: Props) {
   const [pending, setPending] = useState<GuessPoint | null>(null)
@@ -73,10 +71,7 @@ export default function MultiplayerGameScreen({
           </tbody>
         </table>
         {roundResult.nextRound ? (
-          <>
-            {autoAdvanceSeconds !== null && <p>Next round in {autoAdvanceSeconds}</p>}
-            <button onClick={onContinue}>Next round</button>
-          </>
+          autoAdvanceSeconds !== null && <p>Next round in {autoAdvanceSeconds}</p>
         ) : (
           <button onClick={onShowStandings} disabled={!standingsReady}>
             {standingsReady ? 'Final standings' : 'Finishing match...'}
