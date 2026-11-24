@@ -8,10 +8,10 @@ public class InMemoryGuestSessionRepository : IGuestSessionRepository
 {
     private readonly List<GuestSession> _sessions = [];
 
-    public Task<GuestSession?> GetByTokenAsync(string token) =>
+    public Task<GuestSession?> GetByTokenAsync(string token, CancellationToken cancellationToken) =>
         Task.FromResult(_sessions.FirstOrDefault(s => s.Token == token));
 
-    public Task<GuestSession> CreateAsync(string nickname, string token)
+    public Task<GuestSession> CreateAsync(string nickname, string token, CancellationToken cancellationToken)
     {
         var playerId = _sessions.Count + 1;
         var session = new GuestSession

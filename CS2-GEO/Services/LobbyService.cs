@@ -12,27 +12,28 @@ public class LobbyService(ILobbyRepository lobbies, LobbyGate gate, IHubContext<
 {
     private const string JoinCodeAlphabet = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no 0/O/1/I - avoids ambiguity when read aloud
 
-    public async Task<CreateLobbyResult> CreateAsync(int hostPlayerId, string? mapCode, int roundCount)
+    public async Task<CreateLobbyResult> CreateAsync(int hostPlayerId, string? mapCode, int roundCount, CancellationToken cancellationToken)
     {
         if (roundCount < 1)
             return new CreateLobbyResult(null, CreateLobbyError.TooFewRounds);
 
-        var lobby = await lobbies.CreateAsync(hostPlayerId, GenerateJoinCode(), mapCode, roundCount);
+        // One save that nothing else waits on, so the request's token can cancel it whole.
+        var lobby = await lobbies.CreateAsync(hostPlayerId, GenerateJoinCode(), mapCode, roundCount, cancellationToken);
 
         return new CreateLobbyResult(ToDto(lobby), null);
     }
 
-    public async Task<JoinLobbyResult> JoinAsync(string joinCode, int playerId)
+    public async Task<JoinLobbyResult> JoinAsync(string joinCode, int playerId, CancellationToken cancellationToken)
     {
-        var lobbyId = await lobbies.GetIdByJoinCodeAsync(joinCode);
+        var lobbyId = await lobbies.GetIdByJoinCodeAsync(joinCode, cancellationToken);
         if (lobbyId is null)
             return new JoinLobbyResult(null, JoinLobbyError.NotFound);
 
         // Same lock as starting the match: two players racing for the last slot must not both
         // succeed, and nobody may join after the host's start has already snapshotted the members.
-        using var _ = await gate.AcquireAsync(lobbyId.Value);
+        using var _ = await gate.AcquireAsync(lobbyId.Value, cancellationToken);
 
-        var lobby = (await lobbies.GetByJoinCodeAsync(joinCode))!;
+        var lobby = (await lobbies.GetByJoinCodeAsync(joinCode, cancellationToken))!;
         if (lobby.Status != LobbyStatus.Waiting)
             return new JoinLobbyResult(null, JoinLobbyError.AlreadyStarted);
         if (lobby.Members.Any(m => m.PlayerId == playerId))
@@ -40,9 +41,11 @@ public class LobbyService(ILobbyRepository lobbies, LobbyGate gate, IHubContext<
         if (lobby.Members.Count >= lobby.MaxPlayers)
             throw new LobbyFullException(lobby.Id);
 
-        await lobbies.AddMemberAsync(lobby.Id, playerId);
+        // From here on the lobby has changed, so finish even if the caller gives up: everyone else
+        // still needs the LobbyUpdated broadcast with the new member.
+        await lobbies.AddMemberAsync(lobby.Id, playerId, CancellationToken.None);
 
-        var refreshed = await lobbies.GetByJoinCodeAsync(joinCode);
+        var refreshed = await lobbies.GetByJoinCodeAsync(joinCode, CancellationToken.None);
         var dto = ToDto(refreshed!);
 
         // Push the fresh member list to everyone already connected to this lobby's group. Sent while
@@ -52,9 +55,9 @@ public class LobbyService(ILobbyRepository lobbies, LobbyGate gate, IHubContext<
         return new JoinLobbyResult(dto, null);
     }
 
-    public async Task<LobbyDto?> GetCurrentAsync(int playerId)
+    public async Task<LobbyDto?> GetCurrentAsync(int playerId, CancellationToken cancellationToken)
     {
-        var lobby = await lobbies.GetActiveForPlayerAsync(playerId);
+        var lobby = await lobbies.GetActiveForPlayerAsync(playerId, cancellationToken);
         return lobby is null ? null : ToDto(lobby);
     }
 

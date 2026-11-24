@@ -11,9 +11,12 @@ public static class DatabaseInitializer
         await using var scope = app.Services.CreateAsyncScope();
         var db = scope.ServiceProvider.GetRequiredService<GameDbContext>();
 
-        await db.Database.MigrateAsync();
+        // No request exists yet, so the only reason to stop is the app shutting down mid-startup.
+        var stopping = app.Lifetime.ApplicationStopping;
+
+        await db.Database.MigrateAsync(stopping);
 
         var seedPath = Path.Combine(AppContext.BaseDirectory, "Data", "Seed", "seed.json");
-        await DatabaseSeeder.SeedAsync(db, seedPath);
+        await DatabaseSeeder.SeedAsync(db, seedPath, stopping);
     }
 }

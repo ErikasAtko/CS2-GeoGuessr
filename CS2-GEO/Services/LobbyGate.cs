@@ -13,11 +13,14 @@ public class LobbyGate
 {
     private readonly ConcurrentDictionary<int, SemaphoreSlim> _locks = new();
 
-    /// <summary>Waits for the lobby's lock; dispose the result to release it.</summary>
-    public async Task<IDisposable> AcquireAsync(int lobbyId)
+    /// <summary>
+    /// Waits for the lobby's lock; dispose the result to release it. A cancelled wait throws
+    /// <see cref="OperationCanceledException"/> without taking the lock, so there is nothing to release.
+    /// </summary>
+    public async Task<IDisposable> AcquireAsync(int lobbyId, CancellationToken cancellationToken)
     {
         var semaphore = _locks.GetOrAdd(lobbyId, _ => new SemaphoreSlim(1, 1));
-        await semaphore.WaitAsync();
+        await semaphore.WaitAsync(cancellationToken);
         return new Releaser(semaphore);
     }
 

@@ -75,4 +75,4 @@ app.MapLobbiesApi();
 app.MapMatchesApi();
 app.MapHub<MultiplayerHub>("/hubs/multiplayer");
 
-app.Run();
+await app.RunAsync();

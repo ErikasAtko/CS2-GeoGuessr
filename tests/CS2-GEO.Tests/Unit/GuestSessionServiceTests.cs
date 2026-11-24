@@ -5,12 +5,14 @@ namespace CS2_GEO.Tests.Unit;
 
 public class GuestSessionServiceTests
 {
+    private static CancellationToken Cancellation => TestContext.Current.CancellationToken;
+
     private readonly GuestSessionService _service = new(new InMemoryGuestSessionRepository());
 
     [Fact]
     public async Task Create_NicknameWithSurroundingSpaces_IsTrimmed()
     {
-        var result = await _service.CreateAsync("  Ieva  ");
+        var result = await _service.CreateAsync("  Ieva  ", Cancellation);
 
         Assert.Equal("Ieva", result.Session!.Nickname);
     }
@@ -24,7 +26,7 @@ public class GuestSessionServiceTests
     [InlineData("abcdefghijklmnopqrstuvwxyz0123456")] // 33 characters
     public async Task Create_InvalidNickname_ReturnsInvalidNickname(string? nickname)
     {
-        var result = await _service.CreateAsync(nickname!);
+        var result = await _service.CreateAsync(nickname!, Cancellation);
 
         Assert.Equal(CreateGuestSessionError.InvalidNickname, result.Error);
         Assert.Null(result.Session);
@@ -33,7 +35,7 @@ public class GuestSessionServiceTests
     [Fact]
     public async Task Create_NicknameOfExactly32Characters_IsAccepted()
     {
-        var result = await _service.CreateAsync(new string('a', 32));
+        var result = await _service.CreateAsync(new string('a', 32), Cancellation);
 
         Assert.Null(result.Error);
     }
@@ -42,8 +44,8 @@ public class GuestSessionServiceTests
     [Fact]
     public async Task Create_TwoGuests_GetDifferent256BitTokens()
     {
-        var first = await _service.CreateAsync("Ieva");
-        var second = await _service.CreateAsync("Tomas");
+        var first = await _service.CreateAsync("Ieva", Cancellation);
+        var second = await _service.CreateAsync("Tomas", Cancellation);
 
         Assert.NotEqual(first.Session!.Token, second.Session!.Token);
         Assert.Matches("^[0-9A-F]{64}$", first.Session.Token);
@@ -52,9 +54,9 @@ public class GuestSessionServiceTests
     [Fact]
     public async Task ResolvePlayerId_TokenFromCreate_ReturnsThatPlayer()
     {
-        var created = await _service.CreateAsync("Ieva");
+        var created = await _service.CreateAsync("Ieva", Cancellation);
 
-        var playerId = await _service.ResolvePlayerIdAsync(created.Session!.Token);
+        var playerId = await _service.ResolvePlayerIdAsync(created.Session!.Token, Cancellation);
 
         Assert.Equal(created.Session.PlayerId, playerId);
     }
@@ -62,6 +64,6 @@ public class GuestSessionServiceTests
     [Fact]
     public async Task ResolvePlayerId_UnknownToken_ReturnsNull()
     {
-        Assert.Null(await _service.ResolvePlayerIdAsync("not-a-real-token"));
+        Assert.Null(await _service.ResolvePlayerIdAsync("not-a-real-token", Cancellation));
     }
 }

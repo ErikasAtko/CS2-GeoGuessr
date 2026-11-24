@@ -4,7 +4,7 @@ namespace CS2_GEO.Services;
 
 public interface IRoundsService
 {
-    Task<RoundDto?> GetRandomRoundAsync(string? map);
+    Task<RoundDto?> GetRandomRoundAsync(string? map, CancellationToken cancellationToken);
 
-    Task<GuessResultDto?> SubmitGuessAsync(int locationId, GuessRequestDto guess);
+    Task<GuessResultDto?> SubmitGuessAsync(int locationId, GuessRequestDto guess, CancellationToken cancellationToken);
 }

@@ -6,15 +6,15 @@ namespace CS2_GEO.Services;
 
 public class RoundsService(ILocationRepository locations, IScoreCalculator calculator) : IRoundsService
 {
-    public async Task<RoundDto?> GetRandomRoundAsync(string? map)
+    public async Task<RoundDto?> GetRandomRoundAsync(string? map, CancellationToken cancellationToken)
     {
-        var picked = await locations.GetRandomAsync(map, count: 1);
+        var picked = await locations.GetRandomAsync(map, count: 1, cancellationToken);
         return picked.FirstOrDefault()?.ToRoundDto();
     }
 
-    public async Task<GuessResultDto?> SubmitGuessAsync(int locationId, GuessRequestDto guess)
+    public async Task<GuessResultDto?> SubmitGuessAsync(int locationId, GuessRequestDto guess, CancellationToken cancellationToken)
     {
-        var location = await locations.GetByIdAsync(locationId);
+        var location = await locations.GetByIdAsync(locationId, cancellationToken);
         if (location is null)
             return null;
 
