@@ -18,6 +18,42 @@ public class LobbiesApiTests(Cs2GeoApiFactory factory) : IAsyncDisposable
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
     }
 
+    // No password backs this yet: typing a taken name reclaims that player, token and all. Uses the
+    // raw client, not TestPlayer.CreateAsync, which uniquifies nicknames so unrelated tests sharing
+    // the one database (Cs2GeoApiFactory) don't reconnect into each other's players - here the
+    // collision is exactly what's under test, so both calls need the identical literal nickname.
+    [Fact]
+    public async Task CreateGuestSession_SameNicknameAgain_ReconnectsToTheSamePlayer()
+    {
+        var nickname = $"Bob-{Guid.NewGuid():N}"[..32];
+        var first = await CreateSessionAsync(nickname);
+
+        var second = await CreateSessionAsync(nickname);
+
+        Assert.Equal(first.PlayerId, second.PlayerId);
+        Assert.NotEqual(first.Token, second.Token);
+    }
+
+    // Matching is case-insensitive, and the response always carries the name as it was first
+    // stored - so a client that typed "bob" sees "Bob" and can't silently fork a second player.
+    [Fact]
+    public async Task CreateGuestSession_SameNicknameDifferentCase_ReconnectsToTheSamePlayer()
+    {
+        var nickname = $"Bob-{Guid.NewGuid():N}"[..32];
+        var first = await CreateSessionAsync(nickname);
+
+        var second = await CreateSessionAsync(nickname.ToUpperInvariant());
+
+        Assert.Equal(first.PlayerId, second.PlayerId);
+        Assert.Equal(nickname, second.Nickname);
+    }
+
+    private async Task<GuestSessionDto> CreateSessionAsync(string nickname)
+    {
+        var response = await factory.CreateClient().PostAsJsonAsync("/api/guest-sessions", new { nickname }, Cancellation);
+        return (await response.Content.ReadFromJsonAsync<GuestSessionDto>(Cancellation))!;
+    }
+
     // The token from the guest session is what identifies the player on every later request.
     [Fact]
     public async Task CreateLobby_WithGuestToken_CallerBecomesTheHost()
@@ -108,6 +144,84 @@ public class LobbiesApiTests(Cs2GeoApiFactory factory) : IAsyncDisposable
         Assert.Equal(2, responses.Count(r => r.StatusCode == HttpStatusCode.Conflict));
         var final = await (await host.JoinAsync(lobby.JoinCode)).Content.ReadFromJsonAsync<LobbyDto>(Cancellation);
         Assert.Equal(lobby.MaxPlayers, final!.Members.Count);
+    }
+
+    // What a reloaded page sees: it only has the guest token, so this is how it finds out whether
+    // it was in a lobby or a match at all.
+    [Fact]
+    public async Task GetCurrent_NotInAnyLobby_Returns404()
+    {
+        await using var player = await TestPlayer.CreateAsync(factory);
+
+        var response = await player.GetCurrentAsync();
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCurrent_WithoutGuestToken_Returns401()
+    {
+        var response = await factory.CreateClient().GetAsync("/api/lobbies/current", Cancellation);
+
+        Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+    }
+
+    [Fact]
+    public async Task GetCurrent_LobbyNotStartedYet_ReturnsLobbyAndNoMatch()
+    {
+        await using var host = await TestPlayer.CreateAsync(factory);
+        var lobby = await host.CreateLobbyAsync(rounds: 2);
+
+        var response = await host.GetCurrentAsync();
+
+        response.EnsureSuccessStatusCode();
+        var session = (await response.Content.ReadFromJsonAsync<CurrentSessionDto>(Cancellation))!;
+        Assert.Equal(lobby.Id, session.Lobby.Id);
+        Assert.Null(session.Match);
+    }
+
+    // Also proves this returns the round that's actually open, not always round 1: by the time Alice
+    // asks, round 1 has already closed and round 2 is current.
+    [Fact]
+    public async Task GetCurrent_MatchInProgress_ReturnsLobbyAndTheOpenRound()
+    {
+        var alice = await PlayerAsync("Alice");
+        var bob = await PlayerAsync("Bob");
+        var match = await alice.HostMatchAsync(rounds: 2, bob);
+        (await alice.GuessAsync(match.MatchId, roundNumber: 1)).EnsureSuccessStatusCode();
+        (await bob.GuessAsync(match.MatchId, roundNumber: 1)).EnsureSuccessStatusCode();
+        await alice.WaitForAsync<RoundCompletedDto>("RoundCompleted");
+
+        var response = await alice.GetCurrentAsync();
+
+        response.EnsureSuccessStatusCode();
+        var session = (await response.Content.ReadFromJsonAsync<CurrentSessionDto>(Cancellation))!;
+        Assert.Equal(match.LobbyId, session.Lobby.Id);
+        Assert.NotNull(session.Match);
+        Assert.Equal(match.MatchId, session.Match!.MatchId);
+        Assert.Equal(2, session.Match.Round.RoundNumber);
+    }
+
+    [Fact]
+    public async Task GetCurrent_MatchAlreadyFinished_Returns404()
+    {
+        var alice = await PlayerAsync("Alice");
+        var bob = await PlayerAsync("Bob");
+        var match = await alice.HostMatchAsync(rounds: 1, bob);
+        (await alice.GuessAsync(match.MatchId, roundNumber: 1)).EnsureSuccessStatusCode();
+        (await bob.GuessAsync(match.MatchId, roundNumber: 1)).EnsureSuccessStatusCode();
+        await alice.WaitForAsync<List<PlayerStandingDto>>("MatchFinished");
+
+        var response = await alice.GetCurrentAsync();
+
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+    }
+
+    private async Task<TestPlayer> PlayerAsync(string nickname)
+    {
+        var player = await TestPlayer.CreateAsync(factory, nickname);
+        _crowd.Add(player);
+        return player;
     }
 
     private async Task<TestPlayer[]> CreatePlayersAsync(int count)

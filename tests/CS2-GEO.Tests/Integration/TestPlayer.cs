@@ -34,7 +34,13 @@ public sealed class TestPlayer : IAsyncDisposable
     public static async Task<TestPlayer> CreateAsync(Cs2GeoApiFactory factory, string nickname = "Player")
     {
         var http = factory.CreateClient();
-        var response = await http.PostAsJsonAsync("/api/guest-sessions", new { nickname }, Cancellation);
+
+        // Nicknames now reconnect to the same player (see GuestSessionRepository.CreateAsync), and
+        // the whole suite shares one database (Cs2GeoApiFactory), so two tests both asking for
+        // "Alice" would otherwise land on the same player. The suffix keeps every call its own
+        // player without touching what any test passes in or asserts on.
+        var uniqueNickname = $"{nickname}-{Guid.NewGuid():N}"[..32];
+        var response = await http.PostAsJsonAsync("/api/guest-sessions", new { nickname = uniqueNickname }, Cancellation);
         response.EnsureSuccessStatusCode();
         var session = (await response.Content.ReadFromJsonAsync<GuestSessionDto>(Cancellation))!;
 
@@ -48,6 +54,8 @@ public sealed class TestPlayer : IAsyncDisposable
         response.EnsureSuccessStatusCode();
         return (await response.Content.ReadFromJsonAsync<LobbyDto>(Cancellation))!;
     }
+
+    public Task<HttpResponseMessage> GetCurrentAsync() => Http.GetAsync("/api/lobbies/current", Cancellation);
 
     public Task<HttpResponseMessage> JoinAsync(string joinCode) =>
         Http.PostAsync($"/api/lobbies/{joinCode}/join", content: null, Cancellation);

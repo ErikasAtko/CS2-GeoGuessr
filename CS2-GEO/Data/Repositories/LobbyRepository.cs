@@ -13,6 +13,13 @@ public class LobbyRepository(GameDbContext db, QueryRepository<Lobby> lobbies) :
     public Task<int?> GetIdByJoinCodeAsync(string joinCode) =>
         db.Lobbies.Where(l => l.JoinCode == joinCode).Select(l => (int?)l.Id).FirstOrDefaultAsync();
 
+    public Task<Lobby?> GetActiveForPlayerAsync(int playerId) =>
+        db.Lobbies
+            .Where(l => l.Status != LobbyStatus.Finished && l.Members.Any(m => m.PlayerId == playerId))
+            .Include(l => l.Members).ThenInclude(m => m.Player)
+            .OrderByDescending(l => l.CreatedAt)
+            .FirstOrDefaultAsync();
+
     public async Task<Lobby> CreateAsync(int hostPlayerId, string joinCode, string? mapCode, int roundCount)
     {
         var lobby = new Lobby

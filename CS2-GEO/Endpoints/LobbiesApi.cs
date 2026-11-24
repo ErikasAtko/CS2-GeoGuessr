@@ -39,5 +39,21 @@ public static class LobbiesApi
                 _ => Results.Ok(result.Lobby),
             };
         });
+
+        // GET /api/lobbies/current - resumes the caller into their active lobby (and its current match
+        // round, if one's running), since a reloaded page only has the guest token, not that state.
+        group.MapGet("/current", async (HttpRequest http, ILobbyService lobbyService, IMatchService matchService, IGuestSessionService sessions) =>
+        {
+            var playerId = await GuestAuth.ResolvePlayerIdAsync(http, sessions);
+            if (playerId is null)
+                return Results.Unauthorized();
+
+            var lobby = await lobbyService.GetCurrentAsync(playerId.Value);
+            if (lobby is null)
+                return Results.NotFound();
+
+            var match = await matchService.GetCurrentStateAsync(lobby.Id);
+            return Results.Ok(new CurrentSessionDto(lobby, match));
+        });
     }
 }

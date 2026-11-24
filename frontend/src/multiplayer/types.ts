@@ -61,3 +61,8 @@ export interface PlayerStandingDto {
   nickname: string
   totalScore: number
 }
+
+export interface CurrentSessionDto {
+  lobby: LobbyDto
+  match: StartMatchResultDto | null
+}

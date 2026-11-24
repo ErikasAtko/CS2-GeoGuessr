@@ -52,6 +52,12 @@ public class LobbyService(ILobbyRepository lobbies, LobbyGate gate, IHubContext<
         return new JoinLobbyResult(dto, null);
     }
 
+    public async Task<LobbyDto?> GetCurrentAsync(int playerId)
+    {
+        var lobby = await lobbies.GetActiveForPlayerAsync(playerId);
+        return lobby is null ? null : ToDto(lobby);
+    }
+
     private static LobbyDto ToDto(Lobby lobby) => new(
         lobby.Id,
         lobby.JoinCode,

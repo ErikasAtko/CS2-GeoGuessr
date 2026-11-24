@@ -1,5 +1,5 @@
 import { BASE_URL } from '../api'
-import type { GuestSessionDto, LobbyDto, StartMatchResultDto, SubmitGuessAckDto } from './types'
+import type { CurrentSessionDto, GuestSessionDto, LobbyDto, StartMatchResultDto, SubmitGuessAckDto } from './types'
 
 async function request<T>(path: string, token: string | null, init?: RequestInit): Promise<T> {
   const headers: Record<string, string> = { 'Content-Type': 'application/json' }
@@ -30,6 +30,15 @@ export function createGuestSession(nickname: string) {
     method: 'POST',
     body: JSON.stringify({ nickname }),
   })
+}
+
+// Not just `request`: a reloaded page with no active lobby is the normal case, not an error, so a
+// 404 here resolves to null instead of throwing.
+export async function getCurrentSession(token: string): Promise<CurrentSessionDto | null> {
+  const res = await fetch(`${BASE_URL}/api/lobbies/current`, { headers: { 'X-Guest-Token': token } })
+  if (res.status === 404) return null
+  if (!res.ok) throw new Error(await errorMessage(res))
+  return res.json() as Promise<CurrentSessionDto>
 }
 
 export function createLobby(token: string, mapCode: string | null, roundCount: number) {
