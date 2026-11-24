@@ -9,14 +9,16 @@ public class LobbyGateTests
 {
     private static readonly TimeSpan _timeout = TimeSpan.FromSeconds(5);
 
+    private static CancellationToken Cancellation => TestContext.Current.CancellationToken;
+
     private readonly LobbyGate _gate = new();
 
     [Fact]
     public async Task Acquire_SameLobby_SecondCallerWaitsUntilTheFirstReleases()
     {
-        var first = await _gate.AcquireAsync(1);
+        var first = await _gate.AcquireAsync(1, Cancellation);
 
-        var second = _gate.AcquireAsync(1);
+        var second = _gate.AcquireAsync(1, Cancellation);
         Assert.False(second.IsCompleted);
 
         first.Dispose();
@@ -26,9 +28,9 @@ public class LobbyGateTests
     [Fact]
     public async Task Acquire_DifferentLobbies_DoNotWaitForEachOther()
     {
-        using var lobby1 = await _gate.AcquireAsync(1);
+        using var lobby1 = await _gate.AcquireAsync(1, Cancellation);
 
-        var lobby2 = _gate.AcquireAsync(2);
+        var lobby2 = _gate.AcquireAsync(2, Cancellation);
 
         Assert.True(lobby2.IsCompletedSuccessfully);
         (await lobby2).Dispose();
@@ -39,14 +41,31 @@ public class LobbyGateTests
     [Fact]
     public async Task Dispose_CalledTwice_DoesNotReleaseSomeoneElsesLock()
     {
-        var stale = await _gate.AcquireAsync(1);
+        var stale = await _gate.AcquireAsync(1, Cancellation);
         stale.Dispose();
-        using var current = await _gate.AcquireAsync(1);
+        using var current = await _gate.AcquireAsync(1, Cancellation);
 
         stale.Dispose();
-        var next = _gate.AcquireAsync(1);
+        var next = _gate.AcquireAsync(1, Cancellation);
 
         Assert.False(next.IsCompleted);
+    }
+
+    // A request that gives up while waiting (the player closed their tab) must not end up holding
+    // the lock: nobody would ever release it, and the lobby would be stuck for everyone.
+    [Fact]
+    public async Task Acquire_CancelledWhileWaiting_ThrowsAndTheNextCallerStillGetsTheLock()
+    {
+        var holder = await _gate.AcquireAsync(1, Cancellation);
+        using var request = new CancellationTokenSource();
+        var cancelled = _gate.AcquireAsync(1, request.Token);
+        var next = _gate.AcquireAsync(1, Cancellation);
+
+        await request.CancelAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(() => cancelled);
+
+        holder.Dispose();
+        (await next.WaitAsync(_timeout, Cancellation)).Dispose();
     }
 
     // FinishMatchAsync forgets a finished lobby while still holding its lock. Anyone already
@@ -54,8 +73,8 @@ public class LobbyGateTests
     [Fact]
     public async Task Forget_WhileHeld_WaitersStillGetTheLock()
     {
-        var holder = await _gate.AcquireAsync(1);
-        var waiter = _gate.AcquireAsync(1);
+        var holder = await _gate.AcquireAsync(1, Cancellation);
+        var waiter = _gate.AcquireAsync(1, Cancellation);
 
         _gate.Forget(1);
         holder.Dispose();

@@ -7,15 +7,15 @@ public static class RoundsApi
 {
     public static void MapRoundsApi(this WebApplication app)
     {
-        app.MapGet("/api/rounds/random", async (string? map, IRoundsService service) =>
+        app.MapGet("/api/rounds/random", async (string? map, IRoundsService service, CancellationToken cancellationToken) =>
         {
-            var round = await service.GetRandomRoundAsync(map);
+            var round = await service.GetRandomRoundAsync(map, cancellationToken);
             return round is null ? Results.NotFound("Round not found") : Results.Ok(round);
         });
 
-        app.MapPost("/api/rounds/{locationId:int}/guess", async (int locationId, GuessRequestDto guess, IRoundsService service) =>
+        app.MapPost("/api/rounds/{locationId:int}/guess", async (int locationId, GuessRequestDto guess, IRoundsService service, CancellationToken cancellationToken) =>
         {
-            var result = await service.SubmitGuessAsync(locationId, guess);
+            var result = await service.SubmitGuessAsync(locationId, guess, cancellationToken);
             return result is null ? Results.NotFound("Round not found") : Results.Ok(result);
         });
     }

@@ -27,11 +27,11 @@ public class InMemoryLocationRepository : ILocationRepository
         return location;
     }
 
-    public Task<List<Location>> GetRandomAsync(string? mapCode, int count) =>
+    public Task<List<Location>> GetRandomAsync(string? mapCode, int count, CancellationToken cancellationToken) =>
         Task.FromResult(_locations.Where(l => mapCode is null || l.Map.Code == mapCode).Take(count).ToList());
 
-    public Task<Location?> GetByIdAsync(int id) => Task.FromResult(_locations.FirstOrDefault(l => l.Id == id));
+    public Task<Location?> GetByIdAsync(int id, CancellationToken cancellationToken) => Task.FromResult(_locations.FirstOrDefault(l => l.Id == id));
 
-    public Task<Dictionary<int, Location>> GetByIdsAsync(IReadOnlyCollection<int> ids) =>
+    public Task<Dictionary<int, Location>> GetByIdsAsync(IReadOnlyCollection<int> ids, CancellationToken cancellationToken) =>
         Task.FromResult(_locations.Where(l => ids.Contains(l.Id)).ToDictionary(l => l.Id));
 }

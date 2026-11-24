@@ -21,26 +21,30 @@ public class MatchService(
     // only then loads that state, so the read is fresh and no other request can change it mid-way.
     // Hub broadcasts go out while still holding the lock, so clients receive them in the order the
     // changes happened.
+    //
+    // The request's cancellationToken covers only the reads and the wait for the lock. Every write,
+    // and everything after it, uses CancellationToken.None (see IMatchService): a match or round
+    // must never be left half-done because one player closed their tab mid-request.
 
-    public async Task<StartMatchResult> StartAsync(string joinCode, int requestingPlayerId)
+    public async Task<StartMatchResult> StartAsync(string joinCode, int requestingPlayerId, CancellationToken cancellationToken)
     {
-        var lobbyId = await lobbies.GetIdByJoinCodeAsync(joinCode);
+        var lobbyId = await lobbies.GetIdByJoinCodeAsync(joinCode, cancellationToken);
         if (lobbyId is null)
             return new StartMatchResult(null, StartMatchError.LobbyNotFound);
 
-        using var _ = await gate.AcquireAsync(lobbyId.Value);
+        using var _ = await gate.AcquireAsync(lobbyId.Value, cancellationToken);
 
-        var lobby = (await lobbies.GetByJoinCodeAsync(joinCode))!;
+        var lobby = (await lobbies.GetByJoinCodeAsync(joinCode, cancellationToken))!;
         if (lobby.HostPlayerId != requestingPlayerId)
             return new StartMatchResult(null, StartMatchError.NotHost);
         if (lobby.Status != LobbyStatus.Waiting)
             return new StartMatchResult(null, StartMatchError.AlreadyStarted);
 
-        var roundLocations = await locations.GetRandomAsync(lobby.MapCode, lobby.RoundCount);
+        var roundLocations = await locations.GetRandomAsync(lobby.MapCode, lobby.RoundCount, cancellationToken);
         if (roundLocations.Count == 0)
             return new StartMatchResult(null, StartMatchError.NoLocationsFound);
 
-        var match = await matches.CreateAsync(lobby, roundLocations);
+        var match = await matches.CreateAsync(lobby, roundLocations, CancellationToken.None);
         var dto = ToStartDto(match);
 
         await hub.Clients.Group(MultiplayerHub.GroupName(lobby.Id)).SendAsync("MatchStarted", dto);
@@ -48,15 +52,15 @@ public class MatchService(
         return new StartMatchResult(dto, null);
     }
 
-    public async Task<SubmitGuessResult> SubmitGuessAsync(int matchId, int playerId, int roundNumber, double x, double y)
+    public async Task<SubmitGuessResult> SubmitGuessAsync(int matchId, int playerId, int roundNumber, double x, double y, CancellationToken cancellationToken)
     {
-        var lobbyId = await matches.GetLobbyIdAsync(matchId);
+        var lobbyId = await matches.GetLobbyIdAsync(matchId, cancellationToken);
         if (lobbyId is null)
             return new SubmitGuessResult(null, SubmitGuessError.MatchNotFound);
 
-        using var _ = await gate.AcquireAsync(lobbyId.Value);
+        using var _ = await gate.AcquireAsync(lobbyId.Value, cancellationToken);
 
-        var match = (await matches.GetByIdAsync(matchId))!;
+        var match = (await matches.GetByIdAsync(matchId, cancellationToken))!;
         if (match.Status != MatchStatus.InProgress)
             return new SubmitGuessResult(null, SubmitGuessError.MatchFinished);
 
@@ -85,7 +89,7 @@ public class MatchService(
         };
 
         participant.TotalScore += result.Score;
-        await matches.AddGuessAsync(guess);
+        await matches.AddGuessAsync(guess, CancellationToken.None);
 
         await CompleteRoundIfDoneAsync(match, currentRound);
 
@@ -94,9 +98,9 @@ public class MatchService(
 
     // Read-only, so unlike the methods above this doesn't take the lobby's lock: a resuming client
     // briefly seeing a round that's about to close is fine, it'll be corrected by the next broadcast.
-    public async Task<StartMatchResultDto?> GetCurrentStateAsync(int lobbyId)
+    public async Task<StartMatchResultDto?> GetCurrentStateAsync(int lobbyId, CancellationToken cancellationToken)
     {
-        var match = await matches.GetInProgressByLobbyIdAsync(lobbyId);
+        var match = await matches.GetInProgressByLobbyIdAsync(lobbyId, cancellationToken);
         if (match is null)
             return null;
 
@@ -106,9 +110,9 @@ public class MatchService(
 
     public async Task HandlePlayerLeftAsync(int lobbyId)
     {
-        using var _ = await gate.AcquireAsync(lobbyId);
+        using var _ = await gate.AcquireAsync(lobbyId, CancellationToken.None);
 
-        var match = await matches.GetInProgressByLobbyIdAsync(lobbyId);
+        var match = await matches.GetInProgressByLobbyIdAsync(lobbyId, CancellationToken.None);
         var currentRound = match is null ? null : CurrentRound(match);
         if (match is null || currentRound is null)
             return;
@@ -130,7 +134,7 @@ public class MatchService(
         // A fresh DB read, not the in-memory round.Guesses collection: EF Core's automatic
         // fixup of an already-loaded navigation after Add() isn't guaranteed to have happened yet,
         // so checking the in-memory collection here made round completion miss broadcasts.
-        var guesses = await matches.GetGuessesForRoundAsync(round.Id);
+        var guesses = await matches.GetGuessesForRoundAsync(round.Id, CancellationToken.None);
         if (guesses.Count == 0)
             return;
 
@@ -146,7 +150,7 @@ public class MatchService(
     private async Task CompleteRoundAsync(Match match, MatchRound round, List<PlayerGuess> guesses)
     {
         round.CompletedAt = DateTime.UtcNow;
-        await matches.SaveChangesAsync();
+        await matches.SaveChangesAsync(CancellationToken.None);
 
         var results = guesses
             .Select(g => new PlayerRoundResultDto(
@@ -180,7 +184,7 @@ public class MatchService(
         match.Status = MatchStatus.Finished;
         match.FinishedAt = DateTime.UtcNow;
         match.Lobby.Status = LobbyStatus.Finished;
-        await matches.SaveChangesAsync();
+        await matches.SaveChangesAsync(CancellationToken.None);
 
         var standings = match.Participants
             .OrderByDescending(p => p.TotalScore)

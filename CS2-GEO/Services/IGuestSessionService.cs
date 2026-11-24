@@ -11,8 +11,8 @@ public record CreateGuestSessionResult(GuestSessionDto? Session, CreateGuestSess
 
 public interface IGuestSessionService
 {
-    Task<CreateGuestSessionResult> CreateAsync(string nickname);
+    Task<CreateGuestSessionResult> CreateAsync(string nickname, CancellationToken cancellationToken);
 
     /// <summary>The player a reconnect token belongs to, or <c>null</c> if the token is unknown.</summary>
-    Task<int?> ResolvePlayerIdAsync(string token);
+    Task<int?> ResolvePlayerIdAsync(string token, CancellationToken cancellationToken);
 }

@@ -5,7 +5,7 @@ namespace CS2_GEO.Data.Repositories;
 
 public class LocationRepository(GameDbContext db, QueryRepository<Location> locations) : ILocationRepository
 {
-    public Task<List<Location>> GetRandomAsync(string? mapCode, int count)
+    public Task<List<Location>> GetRandomAsync(string? mapCode, int count, CancellationToken cancellationToken)
     {
         var query = db.Locations.Include(l => l.Map).AsQueryable();
 
@@ -16,14 +16,14 @@ public class LocationRepository(GameDbContext db, QueryRepository<Location> loca
         return query
             .OrderBy(_ => EF.Functions.Random())
             .Take(count)
-            .ToListAsync();
+            .ToListAsync(cancellationToken);
     }
 
-    public Task<Location?> GetByIdAsync(int id) =>
-        locations.FindAsync(l => l.Id == id, IncludeMap);
+    public Task<Location?> GetByIdAsync(int id, CancellationToken cancellationToken) =>
+        locations.FindAsync(l => l.Id == id, cancellationToken, IncludeMap);
 
-    public Task<Dictionary<int, Location>> GetByIdsAsync(IReadOnlyCollection<int> ids) =>
-        locations.ToDictionaryAsync(l => ids.Contains(l.Id), l => l.Id, IncludeMap);
+    public Task<Dictionary<int, Location>> GetByIdsAsync(IReadOnlyCollection<int> ids, CancellationToken cancellationToken) =>
+        locations.ToDictionaryAsync(l => ids.Contains(l.Id), l => l.Id, cancellationToken, IncludeMap);
 
     // ILocationRepository promises every returned location has its Map loaded.
     private static IQueryable<Location> IncludeMap(IQueryable<Location> query) => query.Include(l => l.Map);

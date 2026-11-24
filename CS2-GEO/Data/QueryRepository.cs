@@ -12,23 +12,25 @@ public class QueryRepository<TEntity>(GameDbContext db) where TEntity : class
 {
     public Task<TEntity?> FindAsync(
         Expression<Func<TEntity, bool>> predicate,
+        CancellationToken cancellationToken,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null)
     {
         var query = include is null ? db.Set<TEntity>() : include(db.Set<TEntity>());
-        return query.FirstOrDefaultAsync(predicate);
+        return query.FirstOrDefaultAsync(predicate, cancellationToken);
     }
 
     /// <summary>Entities matching <paramref name="predicate"/>, keyed by whatever key the caller selects.</summary>
     public Task<Dictionary<TKey, TEntity>> ToDictionaryAsync<TKey>(
         Expression<Func<TEntity, bool>> predicate,
         Func<TEntity, TKey> keySelector,
+        CancellationToken cancellationToken,
         Func<IQueryable<TEntity>, IQueryable<TEntity>>? include = null) where TKey : notnull
     {
         var query = include is null ? db.Set<TEntity>() : include(db.Set<TEntity>());
-        return query.Where(predicate).ToDictionaryAsync(keySelector);
+        return query.Where(predicate).ToDictionaryAsync(keySelector, cancellationToken);
     }
 
     public void Add(TEntity entity) => db.Set<TEntity>().Add(entity);
 
-    public Task SaveChangesAsync() => db.SaveChangesAsync();
+    public Task SaveChangesAsync(CancellationToken cancellationToken) => db.SaveChangesAsync(cancellationToken);
 }

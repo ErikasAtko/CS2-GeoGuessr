@@ -7,7 +7,7 @@ namespace CS2_GEO.Data.Repositories;
 public interface IMapRepository
 {
     /// <summary>Every map with its location count, ordered by display name.</summary>
-    Task<List<MapWithLocationCount>> GetAllAsync();
+    Task<List<MapWithLocationCount>> GetAllAsync(CancellationToken cancellationToken);
 
-    Task<MapWithLocationCount?> GetByCodeAsync(string code);
+    Task<MapWithLocationCount?> GetByCodeAsync(string code, CancellationToken cancellationToken);
 }

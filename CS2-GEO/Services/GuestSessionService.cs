@@ -6,7 +6,7 @@ namespace CS2_GEO.Services;
 
 public class GuestSessionService(IGuestSessionRepository sessions) : IGuestSessionService
 {
-    public async Task<CreateGuestSessionResult> CreateAsync(string nickname)
+    public async Task<CreateGuestSessionResult> CreateAsync(string nickname, CancellationToken cancellationToken)
     {
         // System.Text.Json doesn't enforce non-nullable reference types at runtime, so a missing
         // field in the request body still binds to null despite the parameter's compile-time type.
@@ -15,14 +15,14 @@ public class GuestSessionService(IGuestSessionRepository sessions) : IGuestSessi
             return new CreateGuestSessionResult(null, CreateGuestSessionError.InvalidNickname);
 
         var token = GenerateToken();
-        var session = await sessions.CreateAsync(nickname, token);
+        var session = await sessions.CreateAsync(nickname, token, cancellationToken);
 
         return new CreateGuestSessionResult(new GuestSessionDto(session.PlayerId, session.Player.Nickname, token), null);
     }
 
-    public async Task<int?> ResolvePlayerIdAsync(string token)
+    public async Task<int?> ResolvePlayerIdAsync(string token, CancellationToken cancellationToken)
     {
-        var session = await sessions.GetByTokenAsync(token);
+        var session = await sessions.GetByTokenAsync(token, cancellationToken);
         return session?.PlayerId;
     }
 

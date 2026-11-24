@@ -10,13 +10,13 @@ public static class MatchesApi
         var group = app.MapGroup("/api/matches");
 
         // POST /api/matches/start - the lobby host starts the match: picks the shared rounds and broadcasts round 1 to everyone
-        group.MapPost("/start", async (StartMatchRequestDto request, HttpRequest http, IMatchService matchService, IGuestSessionService sessions) =>
+        group.MapPost("/start", async (StartMatchRequestDto request, HttpRequest http, IMatchService matchService, IGuestSessionService sessions, CancellationToken cancellationToken) =>
         {
-            var playerId = await GuestAuth.ResolvePlayerIdAsync(http, sessions);
+            var playerId = await GuestAuth.ResolvePlayerIdAsync(http, sessions, cancellationToken);
             if (playerId is null)
                 return Results.Unauthorized();
 
-            var result = await matchService.StartAsync(request.JoinCode, playerId.Value);
+            var result = await matchService.StartAsync(request.JoinCode, playerId.Value, cancellationToken);
             return result.Error switch
             {
                 StartMatchError.LobbyNotFound => Results.NotFound("Lobby not found"),
@@ -29,13 +29,13 @@ public static class MatchesApi
 
         // POST /api/matches/{matchId}/guess - scores the caller's guess for whichever round is still open; once everyone in
         // the match has guessed, the result (and the next round, or final standings) goes out over the hub, not in this response
-        group.MapPost("/{matchId:int}/guess", async (int matchId, SubmitGuessRequestDto request, HttpRequest http, IMatchService matchService, IGuestSessionService sessions) =>
+        group.MapPost("/{matchId:int}/guess", async (int matchId, SubmitGuessRequestDto request, HttpRequest http, IMatchService matchService, IGuestSessionService sessions, CancellationToken cancellationToken) =>
         {
-            var playerId = await GuestAuth.ResolvePlayerIdAsync(http, sessions);
+            var playerId = await GuestAuth.ResolvePlayerIdAsync(http, sessions, cancellationToken);
             if (playerId is null)
                 return Results.Unauthorized();
 
-            var result = await matchService.SubmitGuessAsync(matchId, playerId.Value, request.RoundNumber, request.X, request.Y);
+            var result = await matchService.SubmitGuessAsync(matchId, playerId.Value, request.RoundNumber, request.X, request.Y, cancellationToken);
             return result.Error switch
             {
                 SubmitGuessError.MatchNotFound => Results.NotFound("Match not found"),

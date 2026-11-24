@@ -16,10 +16,10 @@ public class MultiplayerHub(ConnectionRegistry connections, IGuestSessionService
     /// </summary>
     public async Task JoinLobbyGroup(int lobbyId, string guestToken)
     {
-        var playerId = await sessions.ResolvePlayerIdAsync(guestToken)
+        var playerId = await sessions.ResolvePlayerIdAsync(guestToken, Context.ConnectionAborted)
             ?? throw new HubException("Unknown guest token");
 
-        await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(lobbyId));
+        await Groups.AddToGroupAsync(Context.ConnectionId, GroupName(lobbyId), Context.ConnectionAborted);
         connections.Add(Context.ConnectionId, lobbyId, playerId);
     }
 

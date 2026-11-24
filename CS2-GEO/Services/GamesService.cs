@@ -6,19 +6,19 @@ namespace CS2_GEO.Services;
 
 public class GamesService(ILocationRepository locations, IGameScorer scorer, IScoreCalculator calculator) : IGamesService
 {
-    public async Task<NewGameResult> CreateNewGameAsync(string? map, int rounds)
+    public async Task<NewGameResult> CreateNewGameAsync(string? map, int rounds, CancellationToken cancellationToken)
     {
         if (rounds < 1)
             return new NewGameResult(null, NewGameError.TooFewRounds);
 
-        var picked = await locations.GetRandomAsync(map, rounds);
+        var picked = await locations.GetRandomAsync(map, rounds, cancellationToken);
 
         return picked.Count == 0
             ? new NewGameResult(null, NewGameError.NoLocationsFound)
             : new NewGameResult(new GameDto(map, picked.Select(l => l.ToRoundDto()).ToList()), null);
     }
 
-    public async Task<SummaryResult> BuildSummaryAsync(GameSummaryRequestDto request)
+    public async Task<SummaryResult> BuildSummaryAsync(GameSummaryRequestDto request, CancellationToken cancellationToken)
     {
         if (request.Guesses.Count == 0)
             return new SummaryResult(null, SummaryError.NoGuesses);
@@ -28,7 +28,7 @@ public class GamesService(ILocationRepository locations, IGameScorer scorer, ISc
             return new SummaryResult(null, SummaryError.DuplicateGuess);
 
         // One query for all locations, then O(1) lookups while iterating.
-        var found = await locations.GetByIdsAsync(locationIds);
+        var found = await locations.GetByIdsAsync(locationIds, cancellationToken);
 
         var missingLocationId = locationIds
             .Where(id => !found.ContainsKey(id))

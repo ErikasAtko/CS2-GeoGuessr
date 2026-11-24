@@ -6,11 +6,11 @@ namespace CS2_GEO.Data.Repositories;
 public interface IGuestSessionRepository
 {
     /// <summary>The session for a reconnect token, with its <see cref="GuestSession.Player"/> loaded, or <c>null</c> if the token is unknown.</summary>
-    Task<GuestSession?> GetByTokenAsync(string token);
+    Task<GuestSession?> GetByTokenAsync(string token, CancellationToken cancellationToken);
 
     /// <summary>
     /// Creates a new guest credential for <paramref name="nickname"/>: reuses the existing
     /// <see cref="Player"/> if that name (case-insensitive) is already taken, or creates one otherwise.
     /// </summary>
-    Task<GuestSession> CreateAsync(string nickname, string token);
+    Task<GuestSession> CreateAsync(string nickname, string token, CancellationToken cancellationToken);
 }

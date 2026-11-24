@@ -9,21 +9,21 @@ public interface IMatchRepository
     /// The match for an id, with its lobby, rounds (locations + their maps), guesses, and
     /// participants (+ players) all loaded - everything a round-completion check needs.
     /// </summary>
-    Task<Match?> GetByIdAsync(int id);
+    Task<Match?> GetByIdAsync(int id, CancellationToken cancellationToken);
 
     /// <summary>The lobby's running match, loaded like <see cref="GetByIdAsync"/>, or <c>null</c> if none is in progress.</summary>
-    Task<Match?> GetInProgressByLobbyIdAsync(int lobbyId);
+    Task<Match?> GetInProgressByLobbyIdAsync(int lobbyId, CancellationToken cancellationToken);
 
     /// <summary>
     /// Just the lobby id of a match, without loading or tracking the match, so a caller can take
     /// that lobby's lock first and then load fresh state inside it.
     /// </summary>
-    Task<int?> GetLobbyIdAsync(int matchId);
+    Task<int?> GetLobbyIdAsync(int matchId, CancellationToken cancellationToken);
 
     /// <summary>Creates a match for a lobby's current members, with a fixed round order, and flips the lobby to <see cref="LobbyStatus.InProgress"/>.</summary>
-    Task<Match> CreateAsync(Lobby lobby, List<Location> roundLocations);
+    Task<Match> CreateAsync(Lobby lobby, List<Location> roundLocations, CancellationToken cancellationToken);
 
-    Task AddGuessAsync(PlayerGuess guess);
+    Task AddGuessAsync(PlayerGuess guess, CancellationToken cancellationToken);
 
     /// <summary>
     /// A fresh read of every guess submitted for a round. Deliberately a real query rather than
@@ -31,8 +31,8 @@ public interface IMatchRepository
     /// collection after <see cref="AddGuessAsync"/> isn't guaranteed to have applied by the time
     /// the caller checks it, so relying on it made round-completion detection flaky.
     /// </summary>
-    Task<List<PlayerGuess>> GetGuessesForRoundAsync(int matchRoundId);
+    Task<List<PlayerGuess>> GetGuessesForRoundAsync(int matchRoundId, CancellationToken cancellationToken);
 
     /// <summary>Persists whatever changes the caller already made to tracked entities (e.g. a participant's running score, match/lobby status).</summary>
-    Task SaveChangesAsync();
+    Task SaveChangesAsync(CancellationToken cancellationToken);
 }

@@ -10,9 +10,9 @@ public static class GuestSessionsApi
         var group = app.MapGroup("/api/guest-sessions");
 
         // POST /api/guest-sessions - creates a guest identity; the returned token must be sent on every later request to act as that player
-        group.MapPost("/", async (CreateGuestSessionRequestDto request, IGuestSessionService service) =>
+        group.MapPost("/", async (CreateGuestSessionRequestDto request, IGuestSessionService service, CancellationToken cancellationToken) =>
         {
-            var result = await service.CreateAsync(request.Nickname);
+            var result = await service.CreateAsync(request.Nickname, cancellationToken);
             return result.Error switch
             {
                 CreateGuestSessionError.InvalidNickname => Results.BadRequest("Nickname must be 1-32 characters"),

@@ -16,10 +16,10 @@ public interface ILocationRepository
     /// Up to <paramref name="count"/> distinct locations in random order, optionally limited to one map.
     /// Returns fewer when there aren't enough, and an empty list when there are none.
     /// </summary>
-    Task<List<Location>> GetRandomAsync(string? mapCode, int count);
+    Task<List<Location>> GetRandomAsync(string? mapCode, int count, CancellationToken cancellationToken);
 
-    Task<Location?> GetByIdAsync(int id);
+    Task<Location?> GetByIdAsync(int id, CancellationToken cancellationToken);
 
     /// <summary>The locations with the given ids, keyed by id. Ids that don't exist are not in the result.</summary>
-    Task<Dictionary<int, Location>> GetByIdsAsync(IReadOnlyCollection<int> ids);
+    Task<Dictionary<int, Location>> GetByIdsAsync(IReadOnlyCollection<int> ids, CancellationToken cancellationToken);
 }

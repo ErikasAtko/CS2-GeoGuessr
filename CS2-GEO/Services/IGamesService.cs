@@ -21,7 +21,7 @@ public record SummaryResult(GameSummaryDto? Summary, SummaryError? Error, int? M
 
 public interface IGamesService
 {
-    Task<NewGameResult> CreateNewGameAsync(string? map, int rounds);
+    Task<NewGameResult> CreateNewGameAsync(string? map, int rounds, CancellationToken cancellationToken);
 
-    Task<SummaryResult> BuildSummaryAsync(GameSummaryRequestDto request);
+    Task<SummaryResult> BuildSummaryAsync(GameSummaryRequestDto request, CancellationToken cancellationToken);
 }
