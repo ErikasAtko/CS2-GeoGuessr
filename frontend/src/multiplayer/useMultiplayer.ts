@@ -8,6 +8,7 @@ import type { GuessPoint } from '../types'
 export type MultiplayerScreen = 'nickname' | 'lobby' | 'playing' | 'roundResult' | 'finished'
 
 const STORAGE_KEY = 'cs2geo.guest'
+const AUTO_ADVANCE_SECONDS = 5
 
 // sessionStorage (not localStorage) is deliberate: it's per-tab, so two tabs in the same
 // browser naturally become two different guest players instead of sharing one identity.
@@ -39,6 +40,7 @@ export function useMultiplayer() {
   const [standings, setStandings] = useState<PlayerStandingDto[] | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [startingMatch, setStartingMatch] = useState(false)
+  const [autoAdvanceSeconds, setAutoAdvanceSeconds] = useState<number | null>(null)
 
   const connectionRef = useRef<HubConnection | null>(null)
 
@@ -165,6 +167,30 @@ export function useMultiplayer() {
     setScreen('playing')
   }
 
+  useEffect(() => {
+    if (screen !== 'roundResult' || !roundResult?.nextRound) return
+    const nextRound = roundResult.nextRound
+    let remaining = AUTO_ADVANCE_SECONDS
+    setAutoAdvanceSeconds(remaining)
+    const interval = setInterval(() => {
+      remaining -= 1
+      if (remaining > 0) {
+        setAutoAdvanceSeconds(remaining)
+        return
+      }
+      clearInterval(interval)
+      setMatch((m) => (m ? { ...m, round: nextRound } : m))
+      setSubmitted(false)
+      setRoundResult(null)
+      setError(null)
+      setScreen('playing')
+    }, 1000)
+    return () => {
+      clearInterval(interval)
+      setAutoAdvanceSeconds(null)
+    }
+  }, [screen, roundResult])
+
   const showStandings = () => {
     if (standings) setScreen('finished')
   }
@@ -182,6 +208,7 @@ export function useMultiplayer() {
     error,
     isHost,
     startingMatch,
+    autoAdvanceSeconds,
     identify,
     createLobbyAction,
     joinLobbyAction,

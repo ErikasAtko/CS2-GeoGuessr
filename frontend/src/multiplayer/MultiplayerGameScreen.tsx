@@ -20,6 +20,7 @@ interface Props {
   error: string | null
   /** True once the final standings have arrived, which unlocks leaving the last round's results. */
   standingsReady: boolean
+  autoAdvanceSeconds: number | null
   onSubmit: (point: GuessPoint) => void
   onContinue: () => void
   onShowStandings: () => void
@@ -33,6 +34,7 @@ export default function MultiplayerGameScreen({
   playerId,
   error,
   standingsReady,
+  autoAdvanceSeconds,
   onSubmit,
   onContinue,
   onShowStandings,
@@ -71,7 +73,10 @@ export default function MultiplayerGameScreen({
           </tbody>
         </table>
         {roundResult.nextRound ? (
-          <button onClick={onContinue}>Next round</button>
+          <>
+            {autoAdvanceSeconds !== null && <p>Next round in {autoAdvanceSeconds}</p>}
+            <button onClick={onContinue}>Next round</button>
+          </>
         ) : (
           <button onClick={onShowStandings} disabled={!standingsReady}>
             {standingsReady ? 'Final standings' : 'Finishing match...'}

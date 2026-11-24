@@ -31,6 +31,7 @@ export default function MultiplayerApp() {
           playerId={mp.identity?.playerId ?? null}
           error={mp.error}
           standingsReady={!!mp.standings}
+          autoAdvanceSeconds={mp.autoAdvanceSeconds}
           onSubmit={mp.submitGuess}
           onContinue={mp.continueToNextRound}
           onShowStandings={mp.showStandings}
