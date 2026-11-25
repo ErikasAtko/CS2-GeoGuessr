@@ -107,14 +107,6 @@ dotnet run
 creates it again, applies every EF migration and seeds the maps and
 locations. Nothing needs to be run by hand.
 
-If `dotnet ef` isn't found, install it once with
-`dotnet tool install --global dotnet-ef`.
-
-This needs your database user to be allowed to create databases. If the
-integration tests run for you, it is: they create their own test
-databases with the same user. If `dotnet run` fails with "permission
-denied to create database", ask ilovekomaru.
-
 
 ## Build and Run
 
