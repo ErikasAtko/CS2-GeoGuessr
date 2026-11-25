@@ -69,8 +69,6 @@ frontend/
     ├── types.ts          TS shapes matching the backend DTOs
     └── App.tsx           picks which screen to render from useGame's state
 
-database/seed1.sql       seed data: the maps and locations the game starts with
-
 tests/CS2-GEO.Tests/
 ├── Unit/                one class at a time, with fakes (Unit/Fakes/) or NSubstitute stubs for its dependencies
 └── Integration/         the real API and a real PostgreSQL database (see Tests below)
@@ -97,16 +95,25 @@ with maps and locations from `Data/Seed/seed.json`.
 
 #### Remaking DB
 
-Run `database/drop-tables.sql` against your personal database.
-
-Then, from `CS2-GEO/`, run:
+From `CS2-GEO/`, run:
 
 ```
+dotnet ef database drop
 dotnet run
 ```
 
-Startup recreates the tables through EF migrations and seeds the data.
-There is no need to run seed SQL manually.
+`dotnet ef database drop` deletes your whole personal database (the one in
+`appsettings.Local.json`) after asking you to confirm. `dotnet run` then
+creates it again, applies every EF migration and seeds the maps and
+locations. Nothing needs to be run by hand.
+
+If `dotnet ef` isn't found, install it once with
+`dotnet tool install --global dotnet-ef`.
+
+This needs your database user to be allowed to create databases. If the
+integration tests run for you, it is: they create their own test
+databases with the same user. If `dotnet run` fails with "permission
+denied to create database", ask ilovekomaru.
 
 
 ## Build and Run
